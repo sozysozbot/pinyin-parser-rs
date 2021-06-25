@@ -1,54 +1,12 @@
 #[cfg(test)]
-mod tests {
-    use crate::*;
-    #[test]
-    fn test_strict1() {
-        assert_eq!(
-            PinyinParser::strict("mián'ǎo")
-                .into_iter()
-                .collect::<Vec<_>>(),
-            vec!["mián", "ǎo"]
-        );
-    }
-
-    fn test_strict2() {
-        // this is officially allowed, though I have never seen anyone use it
-        assert_eq!(
-            PinyinParser::strict("Ẑāŋ").into_iter().collect::<Vec<_>>(),
-            vec!["zhāng"]
-        )
-    }
-
-    fn test_new() {
-        let parser = PinyinParser::new()
-            .is_strict(true)
-            .preserve_punctuations(true)
-            .preserve_spaces(true)
-            .preserve_capitalization(true);
-        assert_eq!(
-            parser
-                .parse("Nǐ zuò shénme?")
-                .into_iter()
-                .collect::<Vec<_>>(),
-            vec!["Nǐ", " ", "zuò", " ", "shén", "me", "?"]
-        )
-    }
-
-    #[test]
-    fn test_loose1() {
-        assert_eq!(
-            PinyinParser::loose("mián'ăo") // ă is LATIN SMALL LETTER A WITH BREVE and is not accepted in strict mode.
-                .into_iter()
-                .collect::<Vec<_>>(),
-            vec!["mián", "ǎo"]
-        );
-    }
-}
+mod tests;
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Default, Copy, Clone, PartialEq, Eq, Debug, Hash)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct PinyinParser {
     _strict: bool,
-    _allow_ambiguous: bool,
+    _allow_ambiguous_elision_of_apostrophe: bool,
     _preserve_punctuations: bool,
     _preserve_spaces: bool,
     _preserve_capitalization: bool,
@@ -58,7 +16,7 @@ impl PinyinParser {
     pub fn new() -> Self {
         PinyinParser {
             _strict: false,
-            _allow_ambiguous: false,
+            _allow_ambiguous_elision_of_apostrophe: false,
             _preserve_spaces: false,
             _preserve_capitalization: false,
             _preserve_punctuations: false,
@@ -96,7 +54,15 @@ impl PinyinParser {
     }
 
     pub fn parse(self, s: &str) -> PinyinParserIter {
-        todo!()
+        PinyinParserIter {
+            configs: self,
+            remaining: UnicodeSegmentation::graphemes(s, true)
+                .map(|c| pinyin_token::to_token(c))
+                .collect::<Vec<_>>()
+                .into_iter(),
+            state: ParserState::BeforeWordInitial,
+            buffer: vec![],
+        }
     }
 
     pub fn strict(s: &str) -> PinyinParserIter {
@@ -108,17 +74,150 @@ impl PinyinParser {
     }
 }
 
-pub struct PinyinParserIter {}
+mod pinyin_token;
+
+pub struct PinyinParserIter {
+    configs: PinyinParser,
+    remaining: std::vec::IntoIter<pinyin_token::PinyinToken>,
+    state: ParserState,
+    buffer: Vec<pinyin_token::PinyinToken>,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum ParserState {
+    BeforeWordInitial,
+    InitialParsed(SpellingInitial),
+    ZCSParsed(ZCS),
+}
 
 impl Iterator for PinyinParserIter {
     type Item = String;
     fn next(&mut self) -> Option<Self::Item> {
-        todo!()
+        use pinyin_token::Alphabet;
+        use pinyin_token::PinyinToken::*;
+        use ParserState::*;
+        loop {
+            match (self.remaining.next(), self.state, &self.buffer[..]) {
+                (None, BeforeWordInitial, &[]) => return None,
+                (Some(Punctuation(s)), BeforeWordInitial, &[]) => {
+                    if self.configs._preserve_punctuations {
+                        return Some(s);
+                    } else {
+                        continue;
+                    }
+                }
+                (Some(Space(s)), BeforeWordInitial, &[]) => {
+                    if self.configs._preserve_spaces {
+                        return Some(s);
+                    } else {
+                        continue;
+                    }
+                }
+
+                (Some(Alph(alph)), BeforeWordInitial, &[]) => match alph.alphabet {
+                    Alphabet::B => self.state = InitialParsed(SpellingInitial::B),
+                    Alphabet::P => self.state = InitialParsed(SpellingInitial::P),
+                    Alphabet::M => {
+                        if alph.diacritics.is_empty() {
+                            self.state = InitialParsed(SpellingInitial::M);
+                        } else {
+                            return Some(alph.to_str(
+                                self.configs._preserve_capitalization,
+                                self.configs._strict,
+                            ));
+                        }
+                    }
+                    Alphabet::F => self.state = InitialParsed(SpellingInitial::F),
+                    Alphabet::D => self.state = InitialParsed(SpellingInitial::D),
+                    Alphabet::T => self.state = InitialParsed(SpellingInitial::T),
+                    Alphabet::N => {
+                        if alph.diacritics.is_empty() {
+                            self.state = InitialParsed(SpellingInitial::N)
+                        } else {
+                            return Some(alph.to_str(
+                                self.configs._preserve_capitalization,
+                                self.configs._strict,
+                            ));
+                        }
+                    }
+                    Alphabet::L => self.state = InitialParsed(SpellingInitial::L),
+                    Alphabet::G => self.state = InitialParsed(SpellingInitial::G),
+                    Alphabet::K => self.state = InitialParsed(SpellingInitial::K),
+                    Alphabet::H => self.state = InitialParsed(SpellingInitial::H),
+                    Alphabet::J => self.state = InitialParsed(SpellingInitial::J),
+                    Alphabet::Q => self.state = InitialParsed(SpellingInitial::Q),
+                    Alphabet::X => self.state = InitialParsed(SpellingInitial::X),
+                    Alphabet::R => self.state = InitialParsed(SpellingInitial::R),
+                    Alphabet::Y => self.state = InitialParsed(SpellingInitial::Y),
+                    Alphabet::W => self.state = InitialParsed(SpellingInitial::W),
+                    Alphabet::Z => {
+                        if alph.diacritics.is_empty() {
+                            self.state = ZCSParsed(ZCS::Z)
+                        } else if matches!(
+                            &alph.diacritics[..],
+                            &[pinyin_token::Diacritic::Circumflex]
+                        ) {
+                            self.state = InitialParsed(SpellingInitial::ZH)
+                        } else {
+                            return Some(alph.to_str(
+                                self.configs._preserve_capitalization,
+                                self.configs._strict,
+                            ));
+                        }
+                    }
+                    Alphabet::C => {
+                        if alph.diacritics.is_empty() {
+                            self.state = ZCSParsed(ZCS::C)
+                        } else if matches!(
+                            &alph.diacritics[..],
+                            &[pinyin_token::Diacritic::Circumflex]
+                        ) {
+                            self.state = InitialParsed(SpellingInitial::CH)
+                        } else {
+                            return Some(alph.to_str(
+                                self.configs._preserve_capitalization,
+                                self.configs._strict,
+                            ));
+                        }
+                    }
+                    Alphabet::S => {
+                        if alph.diacritics.is_empty() {
+                            self.state = ZCSParsed(ZCS::S)
+                        } else if matches!(
+                            &alph.diacritics[..],
+                            &[pinyin_token::Diacritic::Circumflex]
+                        ) {
+                            self.state = InitialParsed(SpellingInitial::SH)
+                        } else {
+                            return Some(alph.to_str(
+                                self.configs._preserve_capitalization,
+                                self.configs._strict,
+                            ));
+                        }
+                    }
+                    Alphabet::A | Alphabet::E | Alphabet::O => {
+                        self.buffer.push(Alph(alph));
+                        self.state = InitialParsed(SpellingInitial::ZeroAEO);
+                    }
+
+                    Alphabet::I => todo!(),
+                    Alphabet::U => todo!(),
+                    Alphabet::NG => todo!(),
+                },
+                _ => todo!(),
+            }
+        }
     }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum NonZeroInitial {
+pub enum ZCS {
+    Z,
+    C,
+    S,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum SpellingInitial {
     B,
     P,
     M,
@@ -140,6 +239,7 @@ pub enum NonZeroInitial {
     Z,
     C,
     S,
+    Y,
+    W,
+    ZeroAEO,
 }
-
-type Initial = Option<NonZeroInitial>;
