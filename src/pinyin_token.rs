@@ -46,7 +46,6 @@ impl Diacritic {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AlphabetWithDiacritics {
     pub capitalized: bool,
-    pub wrong: bool,
     pub alphabet: Alphabet,
     pub diacritics: Vec<Diacritic>,
 }
@@ -179,7 +178,6 @@ macro_rules! low {
     ($u:ident) => {
         PinyinToken::Alph(AlphabetWithDiacritics {
             capitalized: false,
-            wrong: false,
             alphabet: $u,
             diacritics: vec![],
         })
@@ -188,27 +186,6 @@ macro_rules! low {
     ($u:ident, $($arg:tt)*) => {
         PinyinToken::Alph(AlphabetWithDiacritics {
             capitalized: false,
-            wrong: false,
-            alphabet: $u,
-            diacritics: vec![$($arg)*],
-        })
-    };
-}
-
-macro_rules! wrong_low {
-    ($u:expr) => {
-        PinyinToken::Alph(AlphabetWithDiacritics {
-            capitalized: false,
-            wrong: true,
-            alphabet: $u,
-            diacritics: vec![],
-        })
-    };
-
-    ($u:expr, $($arg:tt)*) => {
-        PinyinToken::Alph(AlphabetWithDiacritics {
-            capitalized: false,
-            wrong: true,
             alphabet: $u,
             diacritics: vec![$($arg)*],
         })
@@ -219,7 +196,6 @@ macro_rules! cap {
     ($u:expr) => {
         PinyinToken::Alph(AlphabetWithDiacritics {
             capitalized: true,
-            wrong: false,
             alphabet: $u,
             diacritics: vec![],
         })
@@ -228,34 +204,14 @@ macro_rules! cap {
     ($u:expr, $($arg:tt)*) => {
         PinyinToken::Alph(AlphabetWithDiacritics {
             capitalized: true,
-            wrong: false,
             alphabet: $u,
             diacritics: vec![$($arg)*],
         })
     };
 }
 
-macro_rules! wrong_cap {
-    ($u:ident) => {
-        PinyinToken::Alph(AlphabetWithDiacritics {
-            capitalized: true,
-            wrong: true,
-            alphabet: $u,
-            diacritics: vec![],
-        })
-    };
-
-    ($u:ident, $($arg:tt)*) => {
-        PinyinToken::Alph(AlphabetWithDiacritics {
-            capitalized: true,
-            wrong: true,
-            alphabet: $u,
-            diacritics: vec![$($arg)*],
-        })
-    };
-}
-
-pub fn to_token(s: &str) -> PinyinToken {
+#[allow(clippy::too_many_lines)]
+pub fn to_token(s: &str, strict: bool) -> PinyinToken {
     use Alphabet::{A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, W, X, Y, Z, Ŋ};
     use Diacritic::{Acute, Breve, Circumflex, Grave, Hacek, Macron, Umlaut};
     let mut it = s.chars();
@@ -341,15 +297,24 @@ pub fn to_token(s: &str) -> PinyinToken {
         Some('ǹ') => low!(N, Grave), Some('Ǹ') => cap!(N, Grave),
 
         // wrong
-        Some('\u{0261}') /* IPA's /g/ */ => wrong_low!(G),
-        Some('\u{0251}' /* IPA's /ɑ/ */ | 'α') => wrong_low!(A),
-        Some('ο') => wrong_low!(O),
+        Some('\u{0261}') /* IPA's /g/ */ => if strict { panic!("'\u{0261}' looks like 'g', but it is not.") } else { low!(G) },
+        Some(a @ ('\u{0251}' /* IPA's /ɑ/ */ | 'α')) => if strict { panic!("'{}' looks like 'a', but it is not.", a) } else { low!(A) },
+        Some('ο') => if strict { panic!("'ο' looks like 'o', but it is not.") } else { low!(O) },
         // greek capital letters
-        Some('Α') => wrong_cap!(A), Some('Β') => wrong_cap!(B), Some('Ε') => wrong_cap!(E),
-        Some('Ζ') => wrong_cap!(Z), Some('Η') => wrong_cap!(H), Some('Ι') => wrong_cap!(I),
-        Some('Κ') => wrong_cap!(K), Some('Μ') => wrong_cap!(M), Some('Ν') => wrong_cap!(N),
-        Some('Ο') => wrong_cap!(O), Some('Ρ') => wrong_cap!(P), Some('Τ') => wrong_cap!(T),
-        Some('Υ') => wrong_cap!(Y), Some('Χ') => wrong_cap!(X),
+        Some('Α') => if strict { panic!("'Α' looks like 'A', but it is not.") } else {cap!(A)}, 
+        Some('Β') => if strict { panic!("'Β' looks like 'B', but it is not.") } else {cap!(B)}, 
+        Some('Ε') => if strict { panic!("'Ε' looks like 'E', but it is not.") } else {cap!(E)},
+        Some('Ζ') => if strict { panic!("'Ζ' looks like 'Z', but it is not.") } else {cap!(Z)}, 
+        Some('Η') => if strict { panic!("'Η' looks like 'H', but it is not.") } else {cap!(H)}, 
+        Some('Ι') => if strict { panic!("'Ι' looks like 'I', but it is not.") } else {cap!(I)},
+        Some('Κ') => if strict { panic!("'Κ' looks like 'K', but it is not.") } else {cap!(K)}, 
+        Some('Μ') => if strict { panic!("'Μ' looks like 'M', but it is not.") } else {cap!(M)} , 
+        Some('Ν') => if strict { panic!("'Ν' looks like 'N', but it is not.") } else {cap!(N)},
+        Some('Ο') => if strict { panic!("'Ο' looks like 'O', but it is not.") } else {cap!(O)}, 
+        Some('Ρ') => if strict { panic!("'Ρ' looks like 'P', but it is not.") } else {cap!(P)}, 
+        Some('Τ') => if strict { panic!("'Τ' looks like 'T', but it is not.") } else {cap!(T)},
+        Some('Υ') => if strict { panic!("'Υ' looks like 'Y', but it is not.") } else {cap!(Y)}, 
+        Some('Χ') => if strict { panic!("'Χ' looks like 'X', but it is not.") } else {cap!(X)},
         
         // others
         Some('·') => PinyinToken::LightToneMarker,

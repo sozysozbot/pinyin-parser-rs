@@ -63,13 +63,27 @@ impl PinyinParser {
         }
     }
 
+    /// ```
+    /// use pinyin_parser::PinyinParser;
+    /// let parser = PinyinParser::new()
+    ///     .is_strict(true)
+    ///     .preserve_punctuations(true)
+    ///     .preserve_spaces(true);
+    /// assert_eq!(
+    ///     parser
+    ///         .parse("Nǐ zuò shénme?")
+    ///         .into_iter()
+    ///         .collect::<Vec<_>>(),
+    ///     vec!["nǐ", " ", "zuò", " ", "shén", "me", "?"]
+    /// )
+    /// ```
     #[must_use]
     pub fn parse(self, s: &str) -> PinyinParserIter {
         PinyinParserIter {
             configs: self,
             it: VecAndIndex {
                 vec: UnicodeSegmentation::graphemes(s, true)
-                    .map(|c| pinyin_token::to_token(c))
+                    .map(|c| pinyin_token::to_token(c, self.p_strict))
                     .collect::<Vec<_>>(),
                 next_pos: 0,
             },
@@ -77,11 +91,54 @@ impl PinyinParser {
         }
     }
 
+    /// Strict mode: 
+    /// * forbids the use of breve instead of hacek to represent the third tone
+    /// * forbids the use of IPA `ɡ` (U+0261) instead of `g`
+    /// ```
+    /// use pinyin_parser::PinyinParser;
+    /// assert_eq!(
+    ///     PinyinParser::strict("jīntiān")
+    ///         .into_iter()
+    ///         .collect::<Vec<_>>(),
+    ///     vec!["jīn", "tiān"]
+    /// );
+    /// ```
+    
+    /// ```should_panic
+    /// use pinyin_parser::PinyinParser;
+    /// assert_eq!(
+    ///     PinyinParser::strict("zǒnɡshì") // this `ɡ` is not the `g` from ASCII
+    ///         .into_iter()
+    ///         .collect::<Vec<_>>(),
+    ///     vec!["zǒng", "shì"]
+    /// );
+    /// ```
+
+    /// This parser supports the use of `ẑ`, `ĉ`, `ŝ` and `ŋ`, though I have never seen anyone use it.
+    /// ```
+    /// use pinyin_parser::PinyinParser;
+    /// assert_eq!(
+    ///     PinyinParser::strict("Ẑāŋ").into_iter().collect::<Vec<_>>(),
+    ///     vec!["zhāng"]
+    /// )
+    /// ```
+
     #[must_use]
     pub fn strict(s: &str) -> PinyinParserIter {
         Self::new().is_strict(true).parse(s)
     }
 
+    /// ```
+    /// use pinyin_parser::PinyinParser;
+    /// assert_eq!(
+    ///     // 'ă' is LATIN SMALL LETTER A WITH BREVE and is not accepted in strict mode.  
+    ///     // The correct alphabet to use is 'ǎ'.  
+    ///     PinyinParser::loose("mián'ăo") 
+    ///         .into_iter()
+    ///         .collect::<Vec<_>>(),
+    ///     vec!["mián", "ǎo"]
+    /// );
+    /// ```
     #[must_use]
     pub fn loose(s: &str) -> PinyinParserIter {
         Self::new().parse(s)
@@ -196,7 +253,8 @@ impl Iterator for PinyinParserIter {
                 (
                     Some(Alph(alph)),
                     BeforeWordInitial | AfterSyllablePossiblyConsumingApostrophe,
-                ) => match alph.alphabet {
+                ) => {
+                    match alph.alphabet {
                     Alphabet::B => self.state = InitialParsed(SpellingInitial::B),
                     Alphabet::P => self.state = InitialParsed(SpellingInitial::P),
                     Alphabet::M => {
@@ -271,7 +329,7 @@ impl Iterator for PinyinParserIter {
                         "unexpected alphabet {:?} found at the beginning of a word",
                         alph.alphabet,
                     ),
-                },
+                }},
 
                 (Some(Alph(alph)), ZCSParsed(zcs)) => {
                     if alph.alphabet == Alphabet::H {
@@ -455,14 +513,14 @@ impl Iterator for PinyinParserIter {
 mod finals;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum ZCS {
+enum ZCS {
     Z,
     C,
     S,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum SpellingInitial {
+enum SpellingInitial {
     B,
     P,
     M,
