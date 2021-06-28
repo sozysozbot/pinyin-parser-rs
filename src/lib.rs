@@ -279,7 +279,7 @@ impl Iterator for PinyinParserIter {
 
                     if candidates.is_empty() {
                         panic!(
-                            "no adequate candidate is found, after the initial {:?}",
+                            "no adequate candidate for finals (-an, -ian, ...) is found, after the initial {:?}",
                             initial
                         );
                     }
@@ -428,7 +428,7 @@ impl Iterator for PinyinParserIter {
                         }
                     }
                     panic!(
-                        "no adequate candidate found among candidates {:?}",
+                        "no adequate candidate for finals (-an, -ian, ...) found, among possible candidates {:?}",
                         candidates
                     )
                 }
@@ -504,72 +504,4 @@ impl std::fmt::Display for SpellingInitial {
             SpellingInitial::ZeroAEO => write!(f, ""),
         }
     }
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
-pub struct PinyinAmbiguousParser {
-    _preserve_punctuations: bool,
-    _preserve_spaces: bool,
-    _preserve_capitalization: bool,
-}
-
-impl Default for PinyinAmbiguousParser {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl PinyinAmbiguousParser {
-    pub fn new() -> Self {
-        PinyinAmbiguousParser {
-            _preserve_spaces: false,
-            _preserve_capitalization: false,
-            _preserve_punctuations: false,
-        }
-    }
-
-    pub fn preserve_spaces(self, b: bool) -> Self {
-        Self {
-            _preserve_spaces: b,
-            ..self
-        }
-    }
-
-    pub fn preserve_capitalization(self, b: bool) -> Self {
-        Self {
-            _preserve_capitalization: b,
-            ..self
-        }
-    }
-
-    /// allow british spelling
-    pub fn preserve_capitalisation(self, b: bool) -> Self {
-        self.preserve_capitalization(b)
-    }
-
-    pub fn preserve_punctuations(self, b: bool) -> Self {
-        Self {
-            _preserve_spaces: b,
-            ..self
-        }
-    }
-
-    pub fn parse(self, s: &str) -> PinyinAmbiguousParserIter {
-        PinyinAmbiguousParserIter {
-            configs: self,
-            it: VecAndIndex {
-                vec: UnicodeSegmentation::graphemes(s, true)
-                    .map(|c| pinyin_token::to_token(c))
-                    .collect::<Vec<_>>(),
-                next_pos: 0,
-            },
-            state: ParserState::BeforeWordInitial,
-        }
-    }
-}
-
-pub struct PinyinAmbiguousParserIter {
-    configs: PinyinAmbiguousParser,
-    it: VecAndIndex<pinyin_token::PinyinToken>,
-    state: ParserState,
 }
