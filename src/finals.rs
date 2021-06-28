@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{pinyin_token, VecAndIndex};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum NonRhoticFinal {
@@ -42,8 +42,12 @@ pub enum NonRhoticFinal {
 }
 
 impl NonRhoticFinal {
-    pub fn len(self) -> usize {
-        use NonRhoticFinal::*;
+    #[must_use]
+    pub const fn len(self) -> usize {
+        use NonRhoticFinal::{
+            Ai, An, Ang, Ao, Ei, En, Eng, Ia, Ian, Iang, Iao, Ie, In, Ing, Io, Iong, Iu, Ong, Ou,
+            Ua, Uai, Uan, Uang, Ue, Ui, Un, Uo, Üan, Üe, Ün, A, E, I, O, U, Ê, Ü,
+        };
         match self {
             A | E | Ê | I | O | U | Ü => 1,
             Ai | An | Ao | Ei | En | Ia | Ie | In | Iu | Io | Ou | Ua | Ue | Ui | Un | Uo | Üe
@@ -220,8 +224,11 @@ impl std::fmt::Display for FinalWithTone {
 }
 
 impl VecAndIndex<pinyin_token::PinyinToken> {
+    #[must_use]
+    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::cognitive_complexity)]
     pub fn get_candidates_without_rhotic(&self, strict: bool) -> Vec<Candidate> {
-        use pinyin_token::*;
+        use pinyin_token::{Alphabet, Diacritic, PinyinToken};
         let mut ans = Vec::new();
 
         if let Some(tone) = tone!(self, strict, 0, Alphabet::A) {

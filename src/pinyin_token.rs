@@ -19,16 +19,18 @@ pub enum Diacritic {
 }
 
 impl Diacritic {
-    pub fn to_str_fixing_breve(&self) -> &'static str {
-        use Diacritic::*;
+    #[must_use]
+    pub const fn to_str_fixing_breve(&self) -> &'static str {
+        use Diacritic::{Breve, Hacek};
         match self {
             Breve => Hacek.to_str(),
             a => a.to_str(),
         }
     }
 
-    pub fn to_str(&self) -> &'static str {
-        use Diacritic::*;
+    #[must_use]
+    pub const fn to_str(&self) -> &'static str {
+        use Diacritic::{Acute, Breve, Circumflex, Grave, Hacek, Macron, Umlaut};
         match self {
             Macron => "\u{304}",
             Acute => "\u{301}",
@@ -108,67 +110,67 @@ pub enum Alphabet {
 }
 
 impl Alphabet {
-    pub fn to_cap(self) -> &'static str {
-        use Alphabet::*;
+    #[must_use]
+    pub const fn to_cap(self) -> &'static str {
         match self {
-            A => "A",
-            B => "B",
-            C => "C",
-            D => "D",
-            E => "E",
-            F => "F",
-            G => "G",
-            H => "H",
-            I => "I",
-            J => "J",
-            K => "K",
-            L => "L",
-            M => "M",
-            N => "N",
-            O => "O",
-            P => "P",
-            Q => "Q",
-            R => "R",
-            S => "S",
-            T => "T",
-            U => "U",
-            W => "W",
-            X => "X",
-            Y => "Y",
-            Z => "Z",
-            Ŋ => "Ŋ",
+            Alphabet::A => "A",
+            Alphabet::B => "B",
+            Alphabet::C => "C",
+            Alphabet::D => "D",
+            Alphabet::E => "E",
+            Alphabet::F => "F",
+            Alphabet::G => "G",
+            Alphabet::H => "H",
+            Alphabet::I => "I",
+            Alphabet::J => "J",
+            Alphabet::K => "K",
+            Alphabet::L => "L",
+            Alphabet::M => "M",
+            Alphabet::N => "N",
+            Alphabet::O => "O",
+            Alphabet::P => "P",
+            Alphabet::Q => "Q",
+            Alphabet::R => "R",
+            Alphabet::S => "S",
+            Alphabet::T => "T",
+            Alphabet::U => "U",
+            Alphabet::W => "W",
+            Alphabet::X => "X",
+            Alphabet::Y => "Y",
+            Alphabet::Z => "Z",
+            Alphabet::Ŋ => "Ŋ",
         }
     }
 
-    pub fn to_low(self) -> &'static str {
-        use Alphabet::*;
+    #[must_use]
+    pub const fn to_low(self) -> &'static str {
         match self {
-            A => "a",
-            B => "b",
-            C => "c",
-            D => "d",
-            E => "e",
-            F => "f",
-            G => "g",
-            H => "h",
-            I => "i",
-            J => "j",
-            K => "k",
-            L => "l",
-            M => "m",
-            N => "n",
-            O => "o",
-            P => "p",
-            Q => "q",
-            R => "r",
-            S => "s",
-            T => "t",
-            U => "u",
-            W => "w",
-            X => "x",
-            Y => "y",
-            Z => "z",
-            Ŋ => "ŋ",
+            Alphabet::A => "a",
+            Alphabet::B => "b",
+            Alphabet::C => "c",
+            Alphabet::D => "d",
+            Alphabet::E => "e",
+            Alphabet::F => "f",
+            Alphabet::G => "g",
+            Alphabet::H => "h",
+            Alphabet::I => "i",
+            Alphabet::J => "j",
+            Alphabet::K => "k",
+            Alphabet::L => "l",
+            Alphabet::M => "m",
+            Alphabet::N => "n",
+            Alphabet::O => "o",
+            Alphabet::P => "p",
+            Alphabet::Q => "q",
+            Alphabet::R => "r",
+            Alphabet::S => "s",
+            Alphabet::T => "t",
+            Alphabet::U => "u",
+            Alphabet::W => "w",
+            Alphabet::X => "x",
+            Alphabet::Y => "y",
+            Alphabet::Z => "z",
+            Alphabet::Ŋ => "ŋ",
         }
     }
 }
@@ -254,8 +256,8 @@ macro_rules! wrong_cap {
 }
 
 pub fn to_token(s: &str) -> PinyinToken {
-    use Alphabet::*;
-    use Diacritic::*;
+    use Alphabet::{A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, W, X, Y, Z, Ŋ};
+    use Diacritic::{Acute, Breve, Circumflex, Grave, Hacek, Macron, Umlaut};
     let mut it = s.chars();
     let base = match it.next() {
         None => panic!("to_token received empty string"),
@@ -281,17 +283,16 @@ pub fn to_token(s: &str) -> PinyinToken {
         Some('t') => low!(T), Some('T') => cap!(T),
         Some('u') => low!(U), Some('U') => cap!(U),
         Some('w') => low!(W), Some('W') => cap!(W),
-        Some('x') => cap!(X), Some('X') => cap!(X),
-        Some('y') => cap!(Y), Some('Y') => cap!(Y),
-        Some('z') => cap!(Z), Some('Z') => cap!(Z),
+        Some('x') => low!(X), Some('X') => cap!(X),
+        Some('y') => low!(Y), Some('Y') => cap!(Y),
+        Some('z') => low!(Z), Some('Z') => cap!(Z),
 
         Some('ĉ') => low!(C, Circumflex), Some('Ĉ') => cap!(C, Circumflex),
         Some('ŝ') => low!(S, Circumflex), Some('Ŝ') => cap!(S, Circumflex),
         Some('ẑ') => low!(Z, Circumflex), Some('Ẑ') => cap!(Z, Circumflex),
         Some('ŋ') => low!(Ŋ), Some('Ŋ') => cap!(Ŋ),
 
-        Some('v') => low!(U, Umlaut), Some('V') => cap!(U, Umlaut),
-        Some('ü') => low!(U, Umlaut), Some('Ü') => cap!(U, Umlaut),
+        Some('v' | 'ü') => low!(U, Umlaut), Some('V' | 'Ü') => cap!(U, Umlaut),
         Some('ê') => low!(E, Circumflex), Some('Ê') => cap!(E, Circumflex),
 
         // first tone -- macron
@@ -341,15 +342,15 @@ pub fn to_token(s: &str) -> PinyinToken {
 
         // wrong
         Some('\u{0261}') /* IPA's /g/ */ => wrong_low!(G),
-        Some('\u{0251}') /* IPA's /ɑ/ */ => wrong_low!(A),
+        Some('\u{0251}' /* IPA's /ɑ/ */ | 'α') => wrong_low!(A),
+        Some('ο') => wrong_low!(O),
         // greek capital letters
         Some('Α') => wrong_cap!(A), Some('Β') => wrong_cap!(B), Some('Ε') => wrong_cap!(E),
         Some('Ζ') => wrong_cap!(Z), Some('Η') => wrong_cap!(H), Some('Ι') => wrong_cap!(I),
         Some('Κ') => wrong_cap!(K), Some('Μ') => wrong_cap!(M), Some('Ν') => wrong_cap!(N),
         Some('Ο') => wrong_cap!(O), Some('Ρ') => wrong_cap!(P), Some('Τ') => wrong_cap!(T),
         Some('Υ') => wrong_cap!(Y), Some('Χ') => wrong_cap!(X),
-        Some('ο') => wrong_low!(O), Some('α') => wrong_low!(A),
-
+        
         // others
         Some('·') => PinyinToken::LightToneMarker,
         Some('\'' | '’') => PinyinToken::Apostrophe,
@@ -361,19 +362,26 @@ pub fn to_token(s: &str) -> PinyinToken {
         PinyinToken::Alph(alph) => {
             let mut alph = alph;
             for d in it {
-                match d {
-                    '\u{304}' => alph.diacritics.push(Macron),
-                    '\u{301}' => alph.diacritics.push(Acute),
-                    '\u{30c}' => alph.diacritics.push(Hacek),
-                    '\u{300}' => alph.diacritics.push(Grave),
-                    '\u{306}' => alph.diacritics.push(Breve),
-                    '\u{308}' => alph.diacritics.push(Umlaut),
-                    '\u{302}' => alph.diacritics.push(Circumflex),
+                match diacritic(d) {
+                    Some(a) => alph.diacritics.push(a),
                     _ => return PinyinToken::Others(s.to_owned()),
                 }
             }
             PinyinToken::Alph(alph)
         }
         _ => base,
+    }
+}
+
+const fn diacritic(c: char) -> Option<Diacritic> {
+    match c {
+        '\u{304}' => Some(Diacritic::Macron),
+        '\u{301}' => Some(Diacritic::Acute),
+        '\u{30c}' => Some(Diacritic::Hacek),
+        '\u{300}' => Some(Diacritic::Grave),
+        '\u{306}' => Some(Diacritic::Breve),
+        '\u{308}' => Some(Diacritic::Umlaut),
+        '\u{302}' => Some(Diacritic::Circumflex),
+        _ => None
     }
 }
