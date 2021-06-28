@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic, clippy::nursery)]
+
 #[cfg(test)]
 mod tests;
 use unicode_segmentation::UnicodeSegmentation;
@@ -18,8 +20,9 @@ impl Default for PinyinParser {
 }
 
 impl PinyinParser {
-    pub fn new() -> Self {
-        PinyinParser {
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
             _strict: false,
             _preserve_spaces: false,
             _preserve_punctuations: false,
@@ -27,31 +30,36 @@ impl PinyinParser {
         }
     }
 
-    pub fn is_strict(self, b: bool) -> Self {
+    #[must_use]
+    pub const fn is_strict(self, b: bool) -> Self {
         Self { _strict: b, ..self }
     }
 
-    pub fn preserve_spaces(self, b: bool) -> Self {
+    #[must_use]
+    pub const fn preserve_spaces(self, b: bool) -> Self {
         Self {
             _preserve_spaces: b,
             ..self
         }
     }
 
-    pub fn preserve_punctuations(self, b: bool) -> Self {
+    #[must_use]
+    pub const fn preserve_punctuations(self, b: bool) -> Self {
         Self {
             _preserve_punctuations: b,
             ..self
         }
     }
 
-    pub fn preserve_miscellaneous(self, b: bool) -> Self {
+    #[must_use]
+    pub const fn preserve_miscellaneous(self, b: bool) -> Self {
         Self {
             _preserve_miscellaneous: b,
             ..self
         }
     }
 
+    #[must_use]
     pub fn parse(self, s: &str) -> PinyinParserIter {
         PinyinParserIter {
             configs: self,
@@ -65,10 +73,12 @@ impl PinyinParser {
         }
     }
 
+    #[must_use]
     pub fn strict(s: &str) -> PinyinParserIter {
         Self::new().is_strict(true).parse(s)
     }
 
+    #[must_use]
     pub fn loose(s: &str) -> PinyinParserIter {
         Self::new().parse(s)
     }
@@ -477,7 +487,6 @@ pub enum SpellingInitial {
 impl std::fmt::Display for SpellingInitial {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            /* FIXME: capitalization is not preserved */
             SpellingInitial::B => write!(f, "b"),
             SpellingInitial::P => write!(f, "p"),
             SpellingInitial::M => write!(f, "m"),
