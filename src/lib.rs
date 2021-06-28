@@ -350,6 +350,37 @@ impl Iterator for PinyinParserIter {
                                     }
                                 }
 
+                                Alphabet::G =>
+                                /* possibly g */
+                                {
+                                    let vowel_follows = match self.it.peek(1) {
+                                        Some(Alph(a)) => matches!(
+                                            a.alphabet,
+                                            Alphabet::A
+                                                | Alphabet::E
+                                                | Alphabet::I
+                                                | Alphabet::O
+                                                | Alphabet::U
+                                        ),
+                                        _ => false,
+                                    };
+                                    if vowel_follows {
+                                        // cannot be an additiona g
+                                        // peeking `g` was not needed
+                                        // hence simply return
+                                        self.state = AfterSyllablePossiblyConsumingApostrophe;
+                                        return Some(format!(
+                                            "{}{}",
+                                            initial,
+                                            finals::FinalWithTone { fin, tone }
+                                        ));
+                                    } else {
+                                        // this candidate is wrong
+                                        self.it.rewind(fin_len);
+                                        continue;
+                                    }
+                                }
+
                                 Alphabet::N => {
                                     let vowel_follows = match self.it.peek(1) {
                                         Some(Alph(a)) => matches!(
@@ -363,8 +394,7 @@ impl Iterator for PinyinParserIter {
                                         _ => false,
                                     };
                                     if vowel_follows {
-                                        // cannot be rhotic
-                                        // peeking `r` was not needed
+                                        // peeking `n` was not needed
                                         // hence simply return
                                         self.state = AfterSyllablePossiblyConsumingApostrophe;
                                         return Some(format!(

@@ -1,9 +1,10 @@
 [package]
 edition = "2018"
 name = "pinyin-parser"
-version = "0.1.1"
+version = "0.1.2"
 license = "MIT"
 description = "Parses a string of pinyin syllables. Covers marginal cases such as `ẑ`, `ŋ` and `ê`."
+repository = "https://github.com/sozysozbot/pinyin-parser-rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
