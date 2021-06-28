@@ -55,6 +55,19 @@ impl PinyinParser {
         }
     }
 
+    /// ```
+    /// use pinyin_parser::PinyinParser;
+    /// let parser = PinyinParser::new()
+    ///     .is_strict(true)
+    ///     .preserve_miscellaneous(true);
+    /// assert_eq!(
+    ///     parser
+    ///         .parse("你Nǐ 好hǎo")
+    ///         .into_iter()
+    ///         .collect::<Vec<_>>(),
+    ///     vec!["你", "nǐ", "好", "hǎo"]
+    /// )
+    /// ```
     #[must_use]
     pub const fn preserve_miscellaneous(self, b: bool) -> Self {
         Self {
