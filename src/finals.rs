@@ -113,7 +113,7 @@ macro_rules! tone {
     };
 
     ($self_:expr, $strict_flag: expr, $ind:expr, $alphabet_pat:pat, $diacritic_pat:pat) => {
-        match $self_.vec.get($self_.next_pos + 1) {
+        match $self_.vec.get($self_.next_pos + $ind) {
             Some(PinyinToken::Alph(alph)) => {
                 if matches!(alph.alphabet, $alphabet_pat) {
                     match &alph.diacritics[..] {
@@ -128,7 +128,18 @@ macro_rules! tone {
                             }
                         }
                         &[$diacritic_pat, Diacritic::Grave] => Some(Tone::Fourth),
-                        &[$diacritic_pat] => Some(Tone::Fifth),
+
+                        &[Diacritic::Macron, $diacritic_pat] => Some(Tone::First),
+                        &[Diacritic::Acute, $diacritic_pat] => Some(Tone::Second),
+                        &[Diacritic::Hacek, $diacritic_pat] => Some(Tone::Third),
+                        &[Diacritic::Breve, $diacritic_pat] => {
+                            if $strict_flag {
+                                None
+                            } else {
+                                Some(Tone::Third)
+                            }
+                        }
+                        &[Diacritic::Grave, $diacritic_pat] => Some(Tone::Fourth),
                         _ => None,
                     }
                 } else {

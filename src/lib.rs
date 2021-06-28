@@ -277,7 +277,14 @@ impl Iterator for PinyinParserIter {
                     self.it.rewind(1);
                     let candidates = self.it.get_candidates_without_rhotic(self.configs._strict);
 
-                    for Candidate { ŋ, fin, tone } in candidates {
+                    if candidates.is_empty() {
+                        panic!(
+                            "no adequate candidate is found, after the initial {:?}",
+                            initial
+                        );
+                    }
+
+                    for Candidate { ŋ, fin, tone } in candidates.clone() {
                         let fin_len = fin.len() - if ŋ { 1 } else { 0 }; // ŋ accounts for ng, hence the len is shorter by 1
                         self.it.advance(fin_len);
 
@@ -420,7 +427,10 @@ impl Iterator for PinyinParserIter {
                             },
                         }
                     }
-                    panic!("no candidate found")
+                    panic!(
+                        "no adequate candidate found among candidates {:?}",
+                        candidates
+                    )
                 }
             }
         }
