@@ -102,7 +102,7 @@ pub enum Alphabet {
     X,
     Y,
     Z,
-    NG,
+    Ŋ,
 }
 
 impl Alphabet {
@@ -134,7 +134,7 @@ impl Alphabet {
             X => "X",
             Y => "Y",
             Z => "Z",
-            NG => "Ŋ",
+            Ŋ => "Ŋ",
         }
     }
 
@@ -166,7 +166,7 @@ impl Alphabet {
             X => "x",
             Y => "y",
             Z => "z",
-            NG => "ŋ",
+            Ŋ => "ŋ",
         }
     }
 }
@@ -286,7 +286,7 @@ pub fn to_token(s: &str) -> PinyinToken {
         Some('ĉ') => low!(C, Circumflex), Some('Ĉ') => cap!(C, Circumflex),
         Some('ŝ') => low!(S, Circumflex), Some('Ŝ') => cap!(S, Circumflex),
         Some('ẑ') => low!(Z, Circumflex), Some('Ẑ') => cap!(Z, Circumflex),
-        Some('ŋ') => low!(NG), Some('Ŋ') => cap!(NG),
+        Some('ŋ') => low!(Ŋ), Some('Ŋ') => cap!(Ŋ),
 
         Some('v') => low!(U, Umlaut), Some('V') => cap!(U, Umlaut),
         Some('ü') => low!(U, Umlaut), Some('Ü') => cap!(U, Umlaut),

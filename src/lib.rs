@@ -2,21 +2,25 @@
 mod tests;
 use unicode_segmentation::UnicodeSegmentation;
 
-#[derive(Default, Copy, Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct PinyinParser {
     _strict: bool,
-    _allow_ambiguous_elision_of_apostrophe: bool,
     _preserve_punctuations: bool,
     _preserve_spaces: bool,
     _preserve_capitalization: bool,
+}
+
+impl Default for PinyinParser {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PinyinParser {
     pub fn new() -> Self {
         PinyinParser {
             _strict: false,
-            _allow_ambiguous_elision_of_apostrophe: false,
             _preserve_spaces: false,
             _preserve_capitalization: false,
             _preserve_punctuations: false,
@@ -217,7 +221,7 @@ impl Iterator for PinyinParserIter {
 
                     Alphabet::I => todo!(),
                     Alphabet::U => todo!(),
-                    Alphabet::NG => todo!(),
+                    Alphabet::Ŋ => todo!(),
                 },
 
                 (Some(Alph(alph)), ZCSParsed(zcs)) => match alph.alphabet {
@@ -237,11 +241,14 @@ impl Iterator for PinyinParserIter {
                         }
                     }
                 },
+
                 _ => todo!(),
             }
         }
     }
 }
+
+mod finals;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum ZCS {
@@ -276,4 +283,72 @@ pub enum SpellingInitial {
     Y,
     W,
     ZeroAEO,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
+pub struct PinyinAmbiguousParser {
+    _preserve_punctuations: bool,
+    _preserve_spaces: bool,
+    _preserve_capitalization: bool,
+}
+
+impl Default for PinyinAmbiguousParser {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl PinyinAmbiguousParser {
+    pub fn new() -> Self {
+        PinyinAmbiguousParser {
+            _preserve_spaces: false,
+            _preserve_capitalization: false,
+            _preserve_punctuations: false,
+        }
+    }
+
+    pub fn preserve_spaces(self, b: bool) -> Self {
+        Self {
+            _preserve_spaces: b,
+            ..self
+        }
+    }
+
+    pub fn preserve_capitalization(self, b: bool) -> Self {
+        Self {
+            _preserve_capitalization: b,
+            ..self
+        }
+    }
+
+    /// allow british spelling
+    pub fn preserve_capitalisation(self, b: bool) -> Self {
+        self.preserve_capitalization(b)
+    }
+
+    pub fn preserve_punctuations(self, b: bool) -> Self {
+        Self {
+            _preserve_spaces: b,
+            ..self
+        }
+    }
+
+    pub fn parse(self, s: &str) -> PinyinAmbiguousParserIter {
+        PinyinAmbiguousParserIter {
+            configs: self,
+            it: VecAndIndex {
+                vec: UnicodeSegmentation::graphemes(s, true)
+                    .map(|c| pinyin_token::to_token(c))
+                    .collect::<Vec<_>>(),
+                next_pos: 0,
+            },
+            state: ParserState::BeforeWordInitial,
+        }
+    }
+}
+
+pub struct PinyinAmbiguousParserIter {
+    configs: PinyinAmbiguousParser,
+    it: VecAndIndex<pinyin_token::PinyinToken>,
+    state: ParserState,
 }
