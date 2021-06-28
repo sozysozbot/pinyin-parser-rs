@@ -50,7 +50,9 @@ pub struct AlphabetWithDiacritics {
 }
 
 impl AlphabetWithDiacritics {
-    pub fn to_str(&self, preserve_capitalization: bool, strict: bool) -> String {
+    pub fn to_str(&self, strict: bool) -> String { self.to_str_preserving_capitalization(false, strict)}
+
+    pub fn to_str_preserving_capitalization(&self, preserve_capitalization: bool, strict: bool) -> String {
         use unicode_normalization::UnicodeNormalization;
         let base = if preserve_capitalization && self.capitalized {
             self.alphabet.to_cap()

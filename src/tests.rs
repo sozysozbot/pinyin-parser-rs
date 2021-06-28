@@ -33,8 +33,7 @@ fn test_new() {
     let parser = PinyinParser::new()
         .is_strict(true)
         .preserve_punctuations(true)
-        .preserve_spaces(true)
-        .preserve_capitalization(true);
+        .preserve_spaces(true);
     assert_eq!(
         parser
             .parse("Nǐ zuò shénme?")

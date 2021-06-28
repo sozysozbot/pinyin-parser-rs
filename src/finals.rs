@@ -1,4 +1,6 @@
 use crate::*;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum NonRhoticFinal {
     A,
     Ai,
@@ -139,9 +141,71 @@ macro_rules! tone {
 }
 
 pub struct Candidate {
-    ŋ: bool,
-    fin: NonRhoticFinal,
-    tone: Tone,
+    pub ŋ: bool,
+    pub fin: NonRhoticFinal,
+    pub tone: Tone,
+}
+
+pub struct FinalWithTone {
+    pub fin: NonRhoticFinal,
+    pub tone: Tone,
+}
+
+impl std::fmt::Display for FinalWithTone {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use unicode_normalization::UnicodeNormalization;
+        let (a, c) = match self.fin {
+            NonRhoticFinal::A => ("a", ""),
+            NonRhoticFinal::Ai => ("a", "i"),
+            NonRhoticFinal::An => ("a", "n"),
+            NonRhoticFinal::Ang => ("a", "ng"),
+            NonRhoticFinal::Ao => ("a", "o"),
+            NonRhoticFinal::E => ("e", ""),
+            NonRhoticFinal::Ê => ("ê", ""),
+            NonRhoticFinal::Ei => ("e", "i"),
+            NonRhoticFinal::En => ("e", "n"),
+            NonRhoticFinal::Eng => ("e", "ng"),
+            NonRhoticFinal::I => ("i", ""),
+            NonRhoticFinal::Ia => ("ia", ""),
+            NonRhoticFinal::Ian => ("ia", "n"),
+            NonRhoticFinal::Iang => ("ia", "ng"),
+            NonRhoticFinal::Iao => ("ia", "o"),
+            NonRhoticFinal::Ie => ("ie", ""),
+            NonRhoticFinal::In => ("i", "n"),
+            NonRhoticFinal::Ing => ("i", "ng"),
+            NonRhoticFinal::Iong => ("io", "ng"),
+            NonRhoticFinal::Iu => ("i", "u"),
+            NonRhoticFinal::Io => ("i", "o"),
+            NonRhoticFinal::O => ("o", ""),
+            NonRhoticFinal::Ong => ("o", "ng"),
+            NonRhoticFinal::Ou => ("o", "u"),
+            NonRhoticFinal::U => ("u", ""),
+            NonRhoticFinal::Ua => ("ua", ""),
+            NonRhoticFinal::Uai => ("ua", "i"),
+            NonRhoticFinal::Uan => ("ua", "n"),
+            NonRhoticFinal::Uang => ("ua", "ng"),
+            NonRhoticFinal::Ue => ("ue", ""),
+            NonRhoticFinal::Ui => ("ui", ""),
+            NonRhoticFinal::Un => ("u", "n"),
+            NonRhoticFinal::Uo => ("uo", ""),
+            NonRhoticFinal::Ü => ("ü", ""),
+            NonRhoticFinal::Üan => ("üa", "n"),
+            NonRhoticFinal::Üe => ("üe", ""),
+            NonRhoticFinal::Ün => ("ü", "n"),
+        };
+
+        let b = match self.tone {
+            Tone::First => "\u{304}",
+            Tone::Second => "\u{301}",
+            Tone::Third => "\u{30c}",
+            Tone::Fourth => "\u{300}",
+            Tone::Fifth => "",
+        };
+
+        let ans = format!("{}{}{}", a, b, c);
+        let ans = ans.nfc().collect::<String>();
+        write!(f, "{}", ans)
+    }
 }
 
 impl VecAndIndex<pinyin_token::PinyinToken> {
