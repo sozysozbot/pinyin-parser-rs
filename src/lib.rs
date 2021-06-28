@@ -7,10 +7,10 @@ use unicode_segmentation::UnicodeSegmentation;
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct PinyinParser {
-    _strict: bool,
-    _preserve_punctuations: bool,
-    _preserve_spaces: bool,
-    _preserve_miscellaneous: bool,
+    p_strict: bool,
+    p_preserve_punctuations: bool,
+    p_preserve_spaces: bool,
+    p_preserve_miscellaneous: bool,
 }
 
 impl Default for PinyinParser {
@@ -23,22 +23,25 @@ impl PinyinParser {
     #[must_use]
     pub const fn new() -> Self {
         Self {
-            _strict: false,
-            _preserve_spaces: false,
-            _preserve_punctuations: false,
-            _preserve_miscellaneous: false,
+            p_strict: false,
+            p_preserve_spaces: false,
+            p_preserve_punctuations: false,
+            p_preserve_miscellaneous: false,
         }
     }
 
     #[must_use]
     pub const fn is_strict(self, b: bool) -> Self {
-        Self { _strict: b, ..self }
+        Self {
+            p_strict: b,
+            ..self
+        }
     }
 
     #[must_use]
     pub const fn preserve_spaces(self, b: bool) -> Self {
         Self {
-            _preserve_spaces: b,
+            p_preserve_spaces: b,
             ..self
         }
     }
@@ -46,7 +49,7 @@ impl PinyinParser {
     #[must_use]
     pub const fn preserve_punctuations(self, b: bool) -> Self {
         Self {
-            _preserve_punctuations: b,
+            p_preserve_punctuations: b,
             ..self
         }
     }
@@ -54,7 +57,7 @@ impl PinyinParser {
     #[must_use]
     pub const fn preserve_miscellaneous(self, b: bool) -> Self {
         Self {
-            _preserve_miscellaneous: b,
+            p_preserve_miscellaneous: b,
             ..self
         }
     }
@@ -130,10 +133,17 @@ impl<T> VecAndIndex<T> {
 
 impl Iterator for PinyinParserIter {
     type Item = String;
+
+    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::cognitive_complexity)]
     fn next(&mut self) -> Option<Self::Item> {
         use pinyin_token::Alphabet;
-        use pinyin_token::PinyinToken::*;
-        use ParserState::*;
+        use pinyin_token::PinyinToken::{
+            Alph, Apostrophe, LightToneMarker, Others, Punctuation, Space,
+        };
+        use ParserState::{
+            AfterSyllablePossiblyConsumingApostrophe, BeforeWordInitial, InitialParsed, ZCSParsed,
+        };
         loop {
             match (self.it.next(), self.state) {
                 (
@@ -149,8 +159,9 @@ impl Iterator for PinyinParserIter {
                     Some(Apostrophe),
                     AfterSyllablePossiblyConsumingApostrophe | BeforeWordInitial,
                 ) => panic!("unexpected apostrophe found at the beginning of a word"),
-                (None, AfterSyllablePossiblyConsumingApostrophe) => return None,
-                (None, BeforeWordInitial) => return None,
+                (None, AfterSyllablePossiblyConsumingApostrophe | BeforeWordInitial) => {
+                    return None
+                }
                 (None, InitialParsed(initial)) => {
                     panic!("unexpected end of string found after {:?}", initial)
                 }
@@ -159,29 +170,26 @@ impl Iterator for PinyinParserIter {
                     Some(Punctuation(s)),
                     BeforeWordInitial | AfterSyllablePossiblyConsumingApostrophe,
                 ) => {
-                    if self.configs._preserve_punctuations {
+                    if self.configs.p_preserve_punctuations {
                         self.state = BeforeWordInitial;
-                        return Some((*s).to_owned());
-                    } else {
-                        continue;
+                        return Some((*s).clone());
                     }
+                    continue;
                 }
                 (Some(Space(s)), BeforeWordInitial | AfterSyllablePossiblyConsumingApostrophe) => {
-                    if self.configs._preserve_spaces {
+                    if self.configs.p_preserve_spaces {
                         self.state = BeforeWordInitial;
-                        return Some((*s).to_owned());
-                    } else {
-                        continue;
+                        return Some((*s).clone());
                     }
+                    continue;
                 }
 
                 (Some(Others(s)), BeforeWordInitial | AfterSyllablePossiblyConsumingApostrophe) => {
-                    if self.configs._preserve_miscellaneous {
+                    if self.configs.p_preserve_miscellaneous {
                         self.state = BeforeWordInitial;
-                        return Some((*s).to_owned());
-                    } else {
-                        continue;
+                        return Some((*s).clone());
                     }
+                    continue;
                 }
 
                 (
@@ -194,7 +202,7 @@ impl Iterator for PinyinParserIter {
                         if alph.diacritics.is_empty() {
                             self.state = InitialParsed(SpellingInitial::M);
                         } else {
-                            return Some(alph.to_str(self.configs._strict));
+                            return Some(alph.to_str(self.configs.p_strict));
                         }
                     }
                     Alphabet::F => self.state = InitialParsed(SpellingInitial::F),
@@ -204,7 +212,7 @@ impl Iterator for PinyinParserIter {
                         if alph.diacritics.is_empty() {
                             self.state = InitialParsed(SpellingInitial::N)
                         } else {
-                            return Some(alph.to_str(self.configs._strict));
+                            return Some(alph.to_str(self.configs.p_strict));
                         }
                     }
                     Alphabet::L => self.state = InitialParsed(SpellingInitial::L),
@@ -226,7 +234,7 @@ impl Iterator for PinyinParserIter {
                         ) {
                             self.state = InitialParsed(SpellingInitial::ZH)
                         } else {
-                            return Some(alph.to_str(self.configs._strict));
+                            return Some(alph.to_str(self.configs.p_strict));
                         }
                     }
                     Alphabet::C => {
@@ -238,7 +246,7 @@ impl Iterator for PinyinParserIter {
                         ) {
                             self.state = InitialParsed(SpellingInitial::CH)
                         } else {
-                            return Some(alph.to_str(self.configs._strict));
+                            return Some(alph.to_str(self.configs.p_strict));
                         }
                     }
                     Alphabet::S => {
@@ -250,7 +258,7 @@ impl Iterator for PinyinParserIter {
                         ) {
                             self.state = InitialParsed(SpellingInitial::SH)
                         } else {
-                            return Some(alph.to_str(self.configs._strict));
+                            return Some(alph.to_str(self.configs.p_strict));
                         }
                     }
                     Alphabet::A | Alphabet::E | Alphabet::O => {
@@ -264,15 +272,14 @@ impl Iterator for PinyinParserIter {
                     ),
                 },
 
-                (Some(Alph(alph)), ZCSParsed(zcs)) => match alph.alphabet {
-                    Alphabet::H => {
+                (Some(Alph(alph)), ZCSParsed(zcs)) => {
+                    if alph.alphabet == Alphabet::H {
                         self.state = match zcs {
                             ZCS::Z => InitialParsed(SpellingInitial::ZH),
                             ZCS::C => InitialParsed(SpellingInitial::CH),
                             ZCS::S => InitialParsed(SpellingInitial::SH),
                         }
-                    }
-                    _ => {
+                    } else {
                         self.it.rewind(1);
                         self.state = match zcs {
                             ZCS::Z => InitialParsed(SpellingInitial::Z),
@@ -280,12 +287,12 @@ impl Iterator for PinyinParserIter {
                             ZCS::S => InitialParsed(SpellingInitial::S),
                         }
                     }
-                },
+                }
 
                 (Some(Alph(_)), InitialParsed(initial)) => {
-                    use finals::*;
+                    use finals::Candidate;
                     self.it.rewind(1);
-                    let candidates = self.it.get_candidates_without_rhotic(self.configs._strict);
+                    let candidates = self.it.get_candidates_without_rhotic(self.configs.p_strict);
 
                     if candidates.is_empty() {
                         panic!(
@@ -355,16 +362,15 @@ impl Iterator for PinyinParserIter {
                                             initial,
                                             finals::FinalWithTone { fin, tone }
                                         ));
-                                    } else {
-                                        // this is rhotic
-                                        self.it.advance(1);
-                                        self.state = AfterSyllablePossiblyConsumingApostrophe;
-                                        return Some(format!(
-                                            "{}{}r",
-                                            initial,
-                                            finals::FinalWithTone { fin, tone }
-                                        ));
                                     }
+                                    // this is rhotic
+                                    self.it.advance(1);
+                                    self.state = AfterSyllablePossiblyConsumingApostrophe;
+                                    return Some(format!(
+                                        "{}{}r",
+                                        initial,
+                                        finals::FinalWithTone { fin, tone }
+                                    ));
                                 }
 
                                 Alphabet::G =>
@@ -391,11 +397,10 @@ impl Iterator for PinyinParserIter {
                                             initial,
                                             finals::FinalWithTone { fin, tone }
                                         ));
-                                    } else {
-                                        // this candidate is wrong
-                                        self.it.rewind(fin_len);
-                                        continue;
                                     }
+                                    // this candidate is wrong
+                                    self.it.rewind(fin_len);
+                                    continue;
                                 }
 
                                 Alphabet::N => {
@@ -419,11 +424,10 @@ impl Iterator for PinyinParserIter {
                                             initial,
                                             finals::FinalWithTone { fin, tone }
                                         ));
-                                    } else {
-                                        // this candidate is not good
-                                        self.it.rewind(fin_len);
-                                        continue;
                                     }
+                                    // this candidate is not good
+                                    self.it.rewind(fin_len);
+                                    continue;
                                 }
 
                                 _ => {
