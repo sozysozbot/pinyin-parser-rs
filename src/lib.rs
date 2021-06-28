@@ -106,7 +106,8 @@ impl PinyinParser {
 
     /// Strict mode: 
     /// * forbids the use of breve instead of hacek to represent the third tone
-    /// * forbids the use of IPA `ɡ` (U+0261) instead of `g`
+    /// * forbids the use of IPA `ɡ` (U+0261) instead of `g`, and other such lookalike characters
+    /// * allows apostrophes only before an `a`, an `e` or an `o` 
     /// ```
     /// use pinyin_parser::PinyinParser;
     /// assert_eq!(
@@ -124,6 +125,17 @@ impl PinyinParser {
     ///         .into_iter()
     ///         .collect::<Vec<_>>(),
     ///     vec!["zǒng", "shì"]
+    /// );
+    /// ```
+
+    /// ```should_panic
+    /// use pinyin_parser::PinyinParser;
+    /// assert_eq!(
+    ///     // An apostrophe can come only before an `a`, an `e` or an `o` in strict mode    
+    ///     PinyinParser::strict("Yīng'guó") 
+    ///         .into_iter()
+    ///         .collect::<Vec<_>>(),
+    ///     vec!["yīng", "guó"]
     /// );
     /// ```
 
@@ -150,6 +162,18 @@ impl PinyinParser {
     ///         .into_iter()
     ///         .collect::<Vec<_>>(),
     ///     vec!["mián", "ǎo"]
+    /// );
+    /// ```
+
+    /// ```
+    /// use pinyin_parser::PinyinParser;
+    /// assert_eq!(
+    ///     // An apostrophe can come only before an `a`, an `e` or an `o` in strict mode,
+    ///     // but allowed here because it's loose    
+    ///     PinyinParser::loose("Yīng'guó") 
+    ///         .into_iter()
+    ///         .collect::<Vec<_>>(),
+    ///     vec!["yīng", "guó"]
     /// );
     /// ```
     #[must_use]
@@ -379,8 +403,34 @@ impl Iterator for PinyinParserIter {
 
                         // ITERATOR IS TEMPORARILY ADVANCED HERE
                         match self.it.peek(0) {
-                            None | Some(Apostrophe) => {
+                            None => {
                                 self.it.advance(1);
+                                self.state = AfterSyllablePossiblyConsumingApostrophe;
+                                return Some(format!(
+                                    "{}{}",
+                                    initial,
+                                    finals::FinalWithTone { fin, tone }
+                                ));
+                            }
+
+                            Some(Apostrophe) => {
+                                self.it.advance(1);
+
+                                // In the strict mode, `a`, `e` or `o` must follow the apostrophe
+                                if self.configs.p_strict {
+                                    let a_e_o = match self.it.peek(0) {
+                                        Some(Alph(a)) => matches!(
+                                            a.alphabet,
+                                            Alphabet::A | Alphabet::E | Alphabet::O
+                                        ),
+                                        _ => false,
+                                    };
+                                    
+                                    if !a_e_o {
+                                        panic!("In strict mode, an apostrophe must be followed by either 'a', 'e' or 'o'")
+                                    }
+                                }
+
                                 self.state = AfterSyllablePossiblyConsumingApostrophe;
                                 return Some(format!(
                                     "{}{}",
