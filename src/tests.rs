@@ -1,4 +1,4 @@
-use crate::*;
+use crate::PinyinParser;
 #[test]
 fn test_strict0() {
     assert_eq!(
