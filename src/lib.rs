@@ -279,14 +279,6 @@ impl Iterator for PinyinParserIter {
 
                     for Candidate { ŋ, fin, tone } in candidates {
                         let fin_len = fin.len() - if ŋ { 1 } else { 0 }; // ŋ accounts for ng, hence the len is shorter by 1
-
-                        println!(
-                            "candidate: {:?}\nfin_len: {}\nremaining: {:?}\n\n",
-                            Candidate { ŋ, fin, tone },
-                            fin_len,
-                            &self.it.vec[self.it.next_pos..]
-                        );
-
                         self.it.advance(fin_len);
 
                         // ITERATOR IS TEMPORARILY ADVANCED HERE
