@@ -49,6 +49,16 @@ fn test_strict4() {
 }
 
 #[test]
+fn test_strict5() {
+    assert_eq!(
+        PinyinParser::strict("jiǔshíjiǔ")
+            .into_iter()
+            .collect::<Vec<_>>(),
+        vec!["jiǔ", "shí", "jiǔ"]
+    )
+}
+
+#[test]
 fn test_new() {
     let parser = PinyinParser::new()
         .is_strict(true)
