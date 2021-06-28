@@ -56,12 +56,13 @@ impl PinyinParser {
     pub fn parse(self, s: &str) -> PinyinParserIter {
         PinyinParserIter {
             configs: self,
-            remaining: UnicodeSegmentation::graphemes(s, true)
-                .map(|c| pinyin_token::to_token(c))
-                .collect::<Vec<_>>()
-                .into_iter(),
+            it: VecAndIndex {
+                vec: UnicodeSegmentation::graphemes(s, true)
+                    .map(|c| pinyin_token::to_token(c))
+                    .collect::<Vec<_>>(),
+                next_pos: 0,
+            },
             state: ParserState::BeforeWordInitial,
-            buffer: vec![],
         }
     }
 
@@ -76,17 +77,32 @@ impl PinyinParser {
 
 mod pinyin_token;
 
+struct VecAndIndex<T> {
+    vec: std::vec::Vec<T>,
+    next_pos: usize,
+}
+
 pub struct PinyinParserIter {
     configs: PinyinParser,
-    remaining: std::vec::IntoIter<pinyin_token::PinyinToken>,
+    it: VecAndIndex<pinyin_token::PinyinToken>,
     state: ParserState,
-    buffer: Vec<pinyin_token::PinyinToken>,
 }
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum ParserState {
     BeforeWordInitial,
     InitialParsed(SpellingInitial),
     ZCSParsed(ZCS),
+}
+
+impl<T> VecAndIndex<T> {
+    fn read_next_token(&mut self) -> Option<&T> {
+        self.vec.get(self.next_pos)
+    }
+
+    fn backtrack(&mut self) {
+        self.next_pos -= 1;
+    }
 }
 
 impl Iterator for PinyinParserIter {
@@ -96,24 +112,24 @@ impl Iterator for PinyinParserIter {
         use pinyin_token::PinyinToken::*;
         use ParserState::*;
         loop {
-            match (self.remaining.next(), self.state, &self.buffer[..]) {
-                (None, BeforeWordInitial, &[]) => return None,
-                (Some(Punctuation(s)), BeforeWordInitial, &[]) => {
+            match (self.it.read_next_token(), self.state) {
+                (None, BeforeWordInitial) => return None,
+                (Some(Punctuation(s)), BeforeWordInitial) => {
                     if self.configs._preserve_punctuations {
-                        return Some(s);
+                        return Some((*s).to_owned());
                     } else {
                         continue;
                     }
                 }
-                (Some(Space(s)), BeforeWordInitial, &[]) => {
+                (Some(Space(s)), BeforeWordInitial) => {
                     if self.configs._preserve_spaces {
-                        return Some(s);
+                        return Some((*s).to_owned());
                     } else {
                         continue;
                     }
                 }
 
-                (Some(Alph(alph)), BeforeWordInitial, &[]) => match alph.alphabet {
+                (Some(Alph(alph)), BeforeWordInitial) => match alph.alphabet {
                     Alphabet::B => self.state = InitialParsed(SpellingInitial::B),
                     Alphabet::P => self.state = InitialParsed(SpellingInitial::P),
                     Alphabet::M => {
@@ -195,13 +211,31 @@ impl Iterator for PinyinParserIter {
                         }
                     }
                     Alphabet::A | Alphabet::E | Alphabet::O => {
-                        self.buffer.push(Alph(alph));
+                        self.it.backtrack();
                         self.state = InitialParsed(SpellingInitial::ZeroAEO);
                     }
 
                     Alphabet::I => todo!(),
                     Alphabet::U => todo!(),
                     Alphabet::NG => todo!(),
+                },
+
+                (Some(Alph(alph)), ZCSParsed(zcs)) => match alph.alphabet {
+                    Alphabet::H => {
+                        self.state = match zcs {
+                            ZCS::Z => InitialParsed(SpellingInitial::ZH),
+                            ZCS::C => InitialParsed(SpellingInitial::CH),
+                            ZCS::S => InitialParsed(SpellingInitial::SH),
+                        }
+                    }
+                    _ => {
+                        self.it.backtrack();
+                        self.state = match zcs {
+                            ZCS::Z => InitialParsed(SpellingInitial::Z),
+                            ZCS::C => InitialParsed(SpellingInitial::C),
+                            ZCS::S => InitialParsed(SpellingInitial::S),
+                        }
+                    }
                 },
                 _ => todo!(),
             }
