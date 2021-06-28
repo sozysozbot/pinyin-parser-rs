@@ -2,6 +2,8 @@
 edition = "2018"
 name = "pinyin-parser"
 version = "0.1.0"
+license = "MIT"
+desciption = "Parses a string of pinyin syllables. Covers marginal cases such as `ẑ`, `ŋ` and `ê`."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
