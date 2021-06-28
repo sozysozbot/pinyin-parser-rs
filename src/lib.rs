@@ -40,7 +40,7 @@ impl PinyinParser {
 
     pub fn preserve_punctuations(self, b: bool) -> Self {
         Self {
-            _preserve_spaces: b,
+            _preserve_punctuations: b,
             ..self
         }
     }
@@ -274,10 +274,19 @@ impl Iterator for PinyinParserIter {
 
                 (Some(Alph(_)), InitialParsed(initial)) => {
                     use finals::*;
+                    self.it.rewind(1);
                     let candidates = self.it.get_candidates_without_rhotic(self.configs._strict);
 
                     for Candidate { ŋ, fin, tone } in candidates {
                         let fin_len = fin.len() - if ŋ { 1 } else { 0 }; // ŋ accounts for ng, hence the len is shorter by 1
+
+                        println!(
+                            "candidate: {:?}\nfin_len: {}\nremaining: {:?}\n\n",
+                            Candidate { ŋ, fin, tone },
+                            fin_len,
+                            &self.it.vec[self.it.next_pos..]
+                        );
+
                         self.it.advance(fin_len);
 
                         // ITERATOR IS TEMPORARILY ADVANCED HERE
@@ -306,8 +315,9 @@ impl Iterator for PinyinParserIter {
                                 | Alphabet::E
                                 | Alphabet::I
                                 | Alphabet::O
-                                | Alphabet::U => {
-                                    /* we have read too much; this candidate is not good; ignore. */
+                                | Alphabet::U
+                                | Alphabet::Ŋ => {
+                                    /* we have read too much or too little; this candidate is not good; ignore. */
                                     self.it.rewind(fin_len);
                                     continue;
                                 }
@@ -347,6 +357,36 @@ impl Iterator for PinyinParserIter {
                                         ));
                                     }
                                 }
+
+                                Alphabet::N => {
+                                    let vowel_follows = match self.it.peek(1) {
+                                        Some(Alph(a)) => matches!(
+                                            a.alphabet,
+                                            Alphabet::A
+                                                | Alphabet::E
+                                                | Alphabet::I
+                                                | Alphabet::O
+                                                | Alphabet::U
+                                        ),
+                                        _ => false,
+                                    };
+                                    if vowel_follows {
+                                        // cannot be rhotic
+                                        // peeking `r` was not needed
+                                        // hence simply return
+                                        self.state = AfterSyllablePossiblyConsumingApostrophe;
+                                        return Some(format!(
+                                            "{}{}",
+                                            initial,
+                                            finals::FinalWithTone { fin, tone }
+                                        ));
+                                    } else {
+                                        // this candidate is not good
+                                        self.it.rewind(fin_len);
+                                        continue;
+                                    }
+                                }
+
                                 _ => {
                                     self.state = AfterSyllablePossiblyConsumingApostrophe;
                                     return Some(format!(
@@ -358,7 +398,7 @@ impl Iterator for PinyinParserIter {
                             },
                         }
                     }
-                    todo!()
+                    panic!("no candidate found")
                 }
             }
         }

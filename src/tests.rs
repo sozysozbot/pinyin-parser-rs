@@ -29,6 +29,16 @@ fn test_strict2() {
 }
 
 #[test]
+fn test_strict3() {
+    assert_eq!(
+        PinyinParser::strict("Nǐ zuò shénme?")
+            .into_iter()
+            .collect::<Vec<_>>(),
+        vec!["nǐ", "zuò", "shén", "me"]
+    )
+}
+
+#[test]
 fn test_new() {
     let parser = PinyinParser::new()
         .is_strict(true)
@@ -52,7 +62,7 @@ fn test_loose1() {
         vec!["mián", "ǎo"]
     );
 }
-
+/*
 #[test]
 fn test_loose2() {
     assert_eq!(
@@ -72,3 +82,4 @@ fn test_loose3() {
         vec!["míng", "tiān"]
     );
 }
+*/

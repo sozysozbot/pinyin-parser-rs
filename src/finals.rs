@@ -86,7 +86,7 @@ macro_rules! toneless {
 
 macro_rules! tone {
     ($self_:expr, $strict_flag: expr, $ind:expr, $alphabet_pat:pat) => {
-        match $self_.vec.get($self_.next_pos + 1) {
+        match $self_.vec.get($self_.next_pos + $ind) {
             Some(PinyinToken::Alph(alph)) => {
                 if matches!(alph.alphabet, $alphabet_pat) {
                     match &alph.diacritics[..] {
@@ -139,7 +139,7 @@ macro_rules! tone {
         }
     };
 }
-
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Candidate {
     pub ŋ: bool,
     pub fin: NonRhoticFinal,
