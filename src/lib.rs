@@ -104,10 +104,10 @@ impl PinyinParser {
         }
     }
 
-    /// Strict mode: 
+    /// Strict mode:
     /// * forbids the use of breve instead of hacek to represent the third tone
     /// * forbids the use of IPA `ɡ` (U+0261) instead of `g`, and other such lookalike characters
-    /// * allows apostrophes only before an `a`, an `e` or an `o` 
+    /// * allows apostrophes only before an `a`, an `e` or an `o`
     /// ```
     /// use pinyin_parser::PinyinParser;
     /// assert_eq!(
@@ -117,7 +117,7 @@ impl PinyinParser {
     ///     vec!["jīn", "tiān"]
     /// );
     /// ```
-    
+
     /// ```should_panic
     /// use pinyin_parser::PinyinParser;
     /// assert_eq!(
@@ -132,7 +132,7 @@ impl PinyinParser {
     /// use pinyin_parser::PinyinParser;
     /// assert_eq!(
     ///     // An apostrophe can come only before an `a`, an `e` or an `o` in strict mode    
-    ///     PinyinParser::strict("Yīng'guó") 
+    ///     PinyinParser::strict("Yīng'guó")
     ///         .into_iter()
     ///         .collect::<Vec<_>>(),
     ///     vec!["yīng", "guó"]
@@ -158,7 +158,7 @@ impl PinyinParser {
     /// assert_eq!(
     ///     // 'ă' is LATIN SMALL LETTER A WITH BREVE and is not accepted in strict mode.  
     ///     // The correct alphabet to use is 'ǎ'.  
-    ///     PinyinParser::loose("mián'ăo") 
+    ///     PinyinParser::loose("mián'ăo")
     ///         .into_iter()
     ///         .collect::<Vec<_>>(),
     ///     vec!["mián", "ǎo"]
@@ -170,7 +170,7 @@ impl PinyinParser {
     /// assert_eq!(
     ///     // An apostrophe can come only before an `a`, an `e` or an `o` in strict mode,
     ///     // but allowed here because it's loose    
-    ///     PinyinParser::loose("Yīng'guó") 
+    ///     PinyinParser::loose("Yīng'guó")
     ///         .into_iter()
     ///         .collect::<Vec<_>>(),
     ///     vec!["yīng", "guó"]
@@ -290,8 +290,7 @@ impl Iterator for PinyinParserIter {
                 (
                     Some(Alph(alph)),
                     BeforeWordInitial | AfterSyllablePossiblyConsumingApostrophe,
-                ) => {
-                    match alph.alphabet {
+                ) => match alph.alphabet {
                     Alphabet::B => self.state = InitialParsed(SpellingInitial::B),
                     Alphabet::P => self.state = InitialParsed(SpellingInitial::P),
                     Alphabet::M => {
@@ -366,7 +365,7 @@ impl Iterator for PinyinParserIter {
                         "unexpected alphabet {:?} found at the beginning of a word",
                         alph.alphabet,
                     ),
-                }},
+                },
 
                 (Some(Alph(alph)), ZCSParsed(zcs)) => {
                     if alph.alphabet == Alphabet::H {
@@ -425,7 +424,7 @@ impl Iterator for PinyinParserIter {
                                         ),
                                         _ => false,
                                     };
-                                    
+
                                     if !a_e_o {
                                         panic!("In strict mode, an apostrophe must be followed by either 'a', 'e' or 'o'")
                                     }

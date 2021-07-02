@@ -319,7 +319,7 @@ pub fn to_token(s: &str, strict: bool) -> PinyinToken {
         // others
         Some('·') => PinyinToken::LightToneMarker,
         Some('\'' | '’') => PinyinToken::Apostrophe,
-        Some(' ' | '!' | '-' | '?' | '—' | '…') => PinyinToken::Punctuation(s.to_owned()),
+        Some('!' | '-' | '?' | '—' | '…') => PinyinToken::Punctuation(s.to_owned()),
         Some(q) => if q.is_whitespace() {PinyinToken::Space(s.to_owned())} else {PinyinToken::Others(s.to_owned())}
     };
 
