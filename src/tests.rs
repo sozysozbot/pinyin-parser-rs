@@ -61,6 +61,18 @@ fn test() {
     )
 }
 
+#[test]
+fn test2() {
+    let parser = PinyinParser::new()
+        .is_strict(true)
+        .preserve_miscellaneous(true)
+        .preserve_spaces(true);
+    assert_eq!(
+        parser.parse("你Nǐあ好hǎo").into_iter().collect::<Vec<_>>(),
+        vec!["你", "nǐ", "あ", "好", "hǎo"]
+    )
+}
+
 /*
 #[test]
 fn test_loose2() {
