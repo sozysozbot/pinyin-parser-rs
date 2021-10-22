@@ -1,5 +1,5 @@
 [package]
-edition = "2018"
+edition = "2021"
 name = "pinyin-parser"
 version = "0.1.7"
 license = "MIT"

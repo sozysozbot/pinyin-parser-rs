@@ -251,7 +251,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::An,
                     tone,
-                })
+                });
             }
 
             if toneless!(self, 1, Alphabet::Ŋ) {
@@ -259,7 +259,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: true,
                     fin: NonRhoticFinal::Ang,
                     tone,
-                })
+                });
             }
 
             if toneless!(self, 1, Alphabet::N) && toneless!(self, 2, Alphabet::G) {
@@ -267,7 +267,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Ang,
                     tone,
-                })
+                });
             }
 
             if toneless!(self, 1, Alphabet::O) {
@@ -275,7 +275,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Ao,
                     tone,
-                })
+                });
             }
         }
 
@@ -307,7 +307,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::En,
                     tone,
-                })
+                });
             }
 
             if toneless!(self, 1, Alphabet::N) && toneless!(self, 2, Alphabet::G) {
@@ -315,7 +315,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Eng,
                     tone,
-                })
+                });
             }
 
             if toneless!(self, 1, Alphabet::Ŋ) {
@@ -323,7 +323,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: true,
                     fin: NonRhoticFinal::Eng,
                     tone,
-                })
+                });
             }
         }
 
@@ -339,7 +339,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: true,
                     fin: NonRhoticFinal::Ong,
                     tone,
-                })
+                });
             }
 
             if toneless!(self, 1, Alphabet::N) && toneless!(self, 2, Alphabet::G) {
@@ -347,7 +347,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Ong,
                     tone,
-                })
+                });
             }
 
             if toneless!(self, 1, Alphabet::U) {
@@ -355,7 +355,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Ou,
                     tone,
-                })
+                });
             }
         }
 
@@ -382,7 +382,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Ing,
                     tone,
-                })
+                });
             }
 
             if toneless!(self, 1, Alphabet::Ŋ) {
@@ -390,7 +390,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: true,
                     fin: NonRhoticFinal::Ing,
                     tone,
-                })
+                });
             }
         }
 
@@ -408,7 +408,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: false,
                         fin: NonRhoticFinal::Ian,
                         tone,
-                    })
+                    });
                 }
 
                 if toneless!(self, 2, Alphabet::N) && toneless!(self, 3, Alphabet::G) {
@@ -416,7 +416,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: false,
                         fin: NonRhoticFinal::Iang,
                         tone,
-                    })
+                    });
                 }
 
                 if toneless!(self, 2, Alphabet::Ŋ) {
@@ -424,7 +424,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: true,
                         fin: NonRhoticFinal::Iang,
                         tone,
-                    })
+                    });
                 }
 
                 if toneless!(self, 2, Alphabet::O) {
@@ -432,7 +432,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: false,
                         fin: NonRhoticFinal::Iao,
                         tone,
-                    })
+                    });
                 }
             } // end -ia..
 
@@ -441,7 +441,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Ie,
                     tone,
-                })
+                });
             }
 
             if let Some(tone) = tone!(self, strict, 1, Alphabet::U) {
@@ -449,7 +449,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Iu,
                     tone,
-                })
+                });
             }
 
             if let Some(tone) = tone!(self, strict, 1, Alphabet::O) {
@@ -463,7 +463,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: false,
                         fin: NonRhoticFinal::Iong,
                         tone,
-                    })
+                    });
                 }
 
                 if toneless!(self, 2, Alphabet::Ŋ) {
@@ -471,7 +471,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: true,
                         fin: NonRhoticFinal::Iong,
                         tone,
-                    })
+                    });
                 }
             }
         }
@@ -488,7 +488,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Un,
                     tone,
-                })
+                });
             }
         }
 
@@ -506,7 +506,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: false,
                         fin: NonRhoticFinal::Uai,
                         tone,
-                    })
+                    });
                 }
 
                 if toneless!(self, 2, Alphabet::N) {
@@ -514,7 +514,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: false,
                         fin: NonRhoticFinal::Uan,
                         tone,
-                    })
+                    });
                 }
 
                 if toneless!(self, 2, Alphabet::N) && toneless!(self, 3, Alphabet::G) {
@@ -522,7 +522,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: false,
                         fin: NonRhoticFinal::Uang,
                         tone,
-                    })
+                    });
                 }
 
                 if toneless!(self, 2, Alphabet::Ŋ) {
@@ -530,7 +530,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: true,
                         fin: NonRhoticFinal::Uang,
                         tone,
-                    })
+                    });
                 }
             } // end -ua..
 
@@ -571,7 +571,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Ün,
                     tone,
-                })
+                });
             }
         }
         if toneless!(self, 0, Alphabet::U, Diacritic::Umlaut) {
@@ -581,7 +581,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                         ŋ: false,
                         fin: NonRhoticFinal::Üan,
                         tone,
-                    })
+                    });
                 }
             }
 
@@ -590,7 +590,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                     ŋ: false,
                     fin: NonRhoticFinal::Üe,
                     tone,
-                })
+                });
             }
         }
 

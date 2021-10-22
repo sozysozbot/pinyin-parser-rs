@@ -16,7 +16,7 @@ fn test_strict3() {
             .into_iter()
             .collect::<Vec<_>>(),
         vec!["nǐ", "zuò", "shén", "me"]
-    )
+    );
 }
 
 #[test]
@@ -26,7 +26,7 @@ fn test_strict4() {
             .into_iter()
             .collect::<Vec<_>>(),
         vec!["nǐ", "xiǎng", "qù", "nǎ", "li"]
-    )
+    );
 }
 
 #[test]
@@ -36,7 +36,7 @@ fn test_strict5() {
             .into_iter()
             .collect::<Vec<_>>(),
         vec!["jiǔ", "shí", "jiǔ"]
-    )
+    );
 }
 
 #[test]
@@ -46,7 +46,7 @@ fn test_strict6() {
             .into_iter()
             .collect::<Vec<_>>(),
         vec!["wǒ", "rèn", "shi", "lǜ", "xiǎo", "jiě"]
-    )
+    );
 }
 
 #[test]
@@ -58,7 +58,7 @@ fn test() {
     assert_eq!(
         parser.parse("你Nǐ 好hǎo").into_iter().collect::<Vec<_>>(),
         vec!["你", "nǐ", " ", "好", "hǎo"]
-    )
+    );
 }
 
 #[test]
@@ -70,7 +70,7 @@ fn test2() {
     assert_eq!(
         parser.parse("你Nǐあ好hǎo").into_iter().collect::<Vec<_>>(),
         vec!["你", "nǐ", "あ", "好", "hǎo"]
-    )
+    );
 }
 
 /*

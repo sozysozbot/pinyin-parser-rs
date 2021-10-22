@@ -216,7 +216,7 @@ impl<T> VecAndIndex<T> {
 
     fn rewind(&mut self, n: usize) {
         if self.next_pos < n {
-            panic!("too much rewind")
+            panic!("too much rewind");
         }
         self.next_pos -= n;
     }
@@ -258,7 +258,7 @@ impl Iterator for PinyinParserIter {
                     return None
                 }
                 (None, InitialParsed(initial)) => {
-                    panic!("unexpected end of string found after {:?}", initial)
+                    panic!("unexpected end of string found after {:?}", initial);
                 }
                 (None, ZCSParsed(zcs)) => panic!("unexpected end of string found after {:?}", zcs),
                 (
@@ -305,7 +305,7 @@ impl Iterator for PinyinParserIter {
                     Alphabet::T => self.state = InitialParsed(SpellingInitial::T),
                     Alphabet::N => {
                         if alph.diacritics.is_empty() {
-                            self.state = InitialParsed(SpellingInitial::N)
+                            self.state = InitialParsed(SpellingInitial::N);
                         } else {
                             return Some(alph.to_str(self.configs.p_strict));
                         }
@@ -322,36 +322,36 @@ impl Iterator for PinyinParserIter {
                     Alphabet::W => self.state = InitialParsed(SpellingInitial::W),
                     Alphabet::Z => {
                         if alph.diacritics.is_empty() {
-                            self.state = ZCSParsed(ZCS::Z)
+                            self.state = ZCSParsed(ZCS::Z);
                         } else if matches!(
                             &alph.diacritics[..],
                             &[pinyin_token::Diacritic::Circumflex]
                         ) {
-                            self.state = InitialParsed(SpellingInitial::ZH)
+                            self.state = InitialParsed(SpellingInitial::ZH);
                         } else {
                             return Some(alph.to_str(self.configs.p_strict));
                         }
                     }
                     Alphabet::C => {
                         if alph.diacritics.is_empty() {
-                            self.state = ZCSParsed(ZCS::C)
+                            self.state = ZCSParsed(ZCS::C);
                         } else if matches!(
                             &alph.diacritics[..],
                             &[pinyin_token::Diacritic::Circumflex]
                         ) {
-                            self.state = InitialParsed(SpellingInitial::CH)
+                            self.state = InitialParsed(SpellingInitial::CH);
                         } else {
                             return Some(alph.to_str(self.configs.p_strict));
                         }
                     }
                     Alphabet::S => {
                         if alph.diacritics.is_empty() {
-                            self.state = ZCSParsed(ZCS::S)
+                            self.state = ZCSParsed(ZCS::S);
                         } else if matches!(
                             &alph.diacritics[..],
                             &[pinyin_token::Diacritic::Circumflex]
                         ) {
-                            self.state = InitialParsed(SpellingInitial::SH)
+                            self.state = InitialParsed(SpellingInitial::SH);
                         } else {
                             return Some(alph.to_str(self.configs.p_strict));
                         }
@@ -426,7 +426,7 @@ impl Iterator for PinyinParserIter {
                                     };
 
                                     if !a_e_o {
-                                        panic!("In strict mode, an apostrophe must be followed by either 'a', 'e' or 'o'")
+                                        panic!("In strict mode, an apostrophe must be followed by either 'a', 'e' or 'o'");
                                     }
                                 }
 
@@ -565,7 +565,7 @@ impl Iterator for PinyinParserIter {
                     panic!(
                         "no adequate candidate for finals (-an, -ian, ...) found, among possible candidates {:?}",
                         candidates
-                    )
+                    );
                 }
             }
         }
