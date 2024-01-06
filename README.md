@@ -21,6 +21,17 @@ assert_eq!(
 );
 ```
 
+Erhua is supported: (However, see [#2](https://github.com/sozysozbot/pinyin-parser-rs/issues/2))
+
+```rust
+use pinyin_parser::PinyinParser;
+assert_eq!(
+      PinyinParser::strict("yīdiǎnr")
+          .collect::<Vec<_>>(),
+      vec!["yī", "diǎnr"]
+);
+```
+
 This parser supports the use of `ẑ`, `ĉ`, `ŝ` and `ŋ`, though I have never seen anyone use it.
 ```rust
 use pinyin_parser::PinyinParser;

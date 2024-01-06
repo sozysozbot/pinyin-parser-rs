@@ -68,12 +68,30 @@ fn test2() {
     );
 }
 
-/*
+#[test]
+fn test3() {
+    assert_eq!(
+        PinyinParser::strict("yù'ér")
+            .collect::<Vec<_>>(),
+        vec!["yù", "ér"]
+    );
+}
+
+
+#[test]
+fn test4() {
+    assert_eq!(
+        PinyinParser::strict("yīdiǎnr")
+            .collect::<Vec<_>>(),
+        vec!["yī", "diǎnr"]
+    );
+}
+
+/* 
 #[test]
 fn test_loose2() {
     assert_eq!(
         PinyinParser::loose("ni3 hao3")
-            .into_iter()
             .collect::<Vec<_>>(),
         vec!["nǐ", "hǎo"]
     );
@@ -83,9 +101,9 @@ fn test_loose2() {
 fn test_loose3() {
     assert_eq!(
         PinyinParser::loose("mi2ngtian1")
-            .into_iter()
             .collect::<Vec<_>>(),
         vec!["míng", "tiān"]
     );
 }
+
 */
