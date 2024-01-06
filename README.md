@@ -32,6 +32,18 @@ assert_eq!(
 );
 ```
 
+If you want `r` to be separated from the main syllable, use `.split_erhua()`
+
+```rust
+use pinyin_parser::PinyinParser;
+assert_eq!(
+    PinyinParser::strict("yīdiǎnr")
+        .split_erhua()
+        .collect::<Vec<_>>(),
+    vec!["yī", "diǎn", "r"]
+);
+```
+
 This parser supports the use of `ẑ`, `ĉ`, `ŝ` and `ŋ`, though I have never seen anyone use it.
 ```rust
 use pinyin_parser::PinyinParser;

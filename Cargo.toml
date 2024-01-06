@@ -1,7 +1,7 @@
 [package]
 edition = "2021"
 name = "pinyin-parser"
-version = "0.1.7"
+version = "0.1.8"
 license = "MIT"
 description = "Parses a string of pinyin syllables. Covers marginal cases such as `ẑ`, `ŋ` and `ê`."
 repository = "https://github.com/sozysozbot/pinyin-parser-rs"

@@ -250,6 +250,46 @@ impl<T> VecAndIndex<T> {
     }
 }
 
+pub struct PinyinParserIterWithSplitR {
+    iter: PinyinParserIter,
+    next_is_r: bool,
+}
+
+impl Iterator for PinyinParserIterWithSplitR {
+    type Item = String;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.next_is_r {
+            self.next_is_r = false;
+            return Some("r".to_owned());
+        }
+
+        let ans = self.iter.next()?;
+
+        // r should be split off from ans, unless they are "er", "ēr", "ér", "ěr", or "èr"
+        if matches!(&ans[..], "er" | "ēr" | "ér" | "ěr" | "èr") {
+            return Some(ans);
+        }
+
+        if let Some(rest) = ans.strip_suffix('r') {
+            self.next_is_r = true;
+            return Some(rest.to_owned());
+        }
+
+        Some(ans)
+    }
+}
+
+impl PinyinParserIter {
+    #[must_use]
+    pub const fn split_erhua(self) -> PinyinParserIterWithSplitR {
+        PinyinParserIterWithSplitR {
+            iter: self,
+            next_is_r: false,
+        }
+    }
+}
+
 impl Iterator for PinyinParserIter {
     type Item = String;
 

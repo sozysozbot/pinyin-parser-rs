@@ -79,6 +79,14 @@ fn test4() {
     );
 }
 
+#[test]
+fn test5() {
+    assert_eq!(
+        PinyinParser::strict("yīdiǎnr").split_erhua().collect::<Vec<_>>(),
+        vec!["yī", "diǎn", "r"]
+    );
+}
+
 /*
 #[test]
 fn test_loose2() {
