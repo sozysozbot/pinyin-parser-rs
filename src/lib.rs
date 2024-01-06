@@ -8,13 +8,14 @@ use unicode_segmentation::UnicodeSegmentation;
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
 pub enum Strictness {
     Strict,
+    StrictAndSeparateApostropheFromCurlyQuote,
     Loose,
 }
 
 impl Strictness {
     #[must_use]
     pub fn is_strict(self) -> bool {
-        self == Self::Strict
+        self == Self::Strict || self == Self::StrictAndSeparateApostropheFromCurlyQuote
     }
 }
 

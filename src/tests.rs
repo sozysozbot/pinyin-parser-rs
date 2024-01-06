@@ -82,8 +82,20 @@ fn test4() {
 #[test]
 fn test5() {
     assert_eq!(
-        PinyinParser::strict("yīdiǎnr chànggēr shuāng'ěr língtīng").split_erhua().collect::<Vec<_>>(),
+        PinyinParser::strict("yīdiǎnr chànggēr shuāng'ěr língtīng")
+            .split_erhua()
+            .collect::<Vec<_>>(),
         vec!["yī", "diǎn", "r", "chàng", "gē", "r", "shuāng", "ěr", "líng", "tīng"]
+    );
+}
+
+#[test]
+fn test6() {
+    let parser = PinyinParser::new()
+        .with_strictness(crate::Strictness::StrictAndSeparateApostropheFromCurlyQuote);
+    assert_eq!(
+        parser.parse("‘Zhěnglǐ fángjiān’").collect::<Vec<_>>(),
+        vec!["zhěng", "lǐ", "fáng", "jiān"]
     );
 }
 

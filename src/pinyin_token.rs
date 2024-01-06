@@ -326,7 +326,10 @@ pub fn to_token(s: &str, strictness: Strictness) -> PinyinToken {
 
         // others
         Some('·') => PinyinToken::LightToneMarker,
-        Some('\'' | '’') => PinyinToken::Apostrophe,
+        Some('\'') => PinyinToken::Apostrophe,
+        Some('’') => if strictness == Strictness::StrictAndSeparateApostropheFromCurlyQuote { 
+            PinyinToken::Others(s.to_owned())
+        } else {PinyinToken::Apostrophe},
         Some('!' | '-' | '?' | '—' | '…') => PinyinToken::Punctuation(s.to_owned()),
         Some(q) => if q.is_whitespace() {PinyinToken::Space(s.to_owned())} else {PinyinToken::Others(s.to_owned())}
     };
