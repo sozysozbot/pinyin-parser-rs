@@ -74,16 +74,16 @@ fn test3() {
 #[test]
 fn test4() {
     assert_eq!(
-        PinyinParser::strict("yīdiǎnr").collect::<Vec<_>>(),
-        vec!["yī", "diǎnr"]
+        PinyinParser::strict("yīdiǎnr chànggēr shuāng'ěr língtīng").collect::<Vec<_>>(),
+        vec!["yī", "diǎnr", "chàng", "gēr", "shuāng", "ěr", "líng", "tīng"]
     );
 }
 
 #[test]
 fn test5() {
     assert_eq!(
-        PinyinParser::strict("yīdiǎnr").split_erhua().collect::<Vec<_>>(),
-        vec!["yī", "diǎn", "r"]
+        PinyinParser::strict("yīdiǎnr chànggēr shuāng'ěr língtīng").split_erhua().collect::<Vec<_>>(),
+        vec!["yī", "diǎn", "r", "chàng", "gē", "r", "shuāng", "ěr", "líng", "tīng"]
     );
 }
 

@@ -30,21 +30,25 @@ Erhua is supported.
 ```rust
 use pinyin_parser::PinyinParser;
 assert_eq!(
-      PinyinParser::strict("yīdiǎnr")
+      PinyinParser::strict("yīdiǎnr chàng'gēr")
           .collect::<Vec<_>>(),
       vec!["yī", "diǎnr"]
 );
 ```
 
-If you want `r` to be separated from the main syllable, use `.split_erhua()`
+If you want `r` to be separated from the main syllable, use `.split_erhua()`.  
+Note that syllables "er", "ēr", "ér", "ěr", and "èr" are exempt from this splitting.
 
 ```rust
 use pinyin_parser::PinyinParser;
 assert_eq!(
-    PinyinParser::strict("yīdiǎnr")
-        .split_erhua()
-        .collect::<Vec<_>>(),
-    vec!["yī", "diǎn", "r"]
+    PinyinParser::strict("yīdiǎnr chànggēr shuāng'ěr língtīng").split_erhua().collect::<Vec<_>>(),
+    vec![
+        "yī", "diǎn", "r", 
+        "chàng", "gē", "r", 
+        "shuāng", "ěr", 
+        "líng", "tīng"
+    ]
 );
 ```
 
