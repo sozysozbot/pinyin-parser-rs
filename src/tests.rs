@@ -3,7 +3,6 @@ use crate::PinyinParser;
 fn test_strict1() {
     assert_eq!(
         PinyinParser::strict("mián'ǎo")
-            .into_iter()
             .collect::<Vec<_>>(),
         vec!["mián", "ǎo"]
     );
@@ -13,7 +12,6 @@ fn test_strict1() {
 fn test_strict3() {
     assert_eq!(
         PinyinParser::strict("Nǐ zuò shénme?")
-            .into_iter()
             .collect::<Vec<_>>(),
         vec!["nǐ", "zuò", "shén", "me"]
     );
@@ -23,7 +21,6 @@ fn test_strict3() {
 fn test_strict4() {
     assert_eq!(
         PinyinParser::strict("Nǐ xiǎng qù nǎli?")
-            .into_iter()
             .collect::<Vec<_>>(),
         vec!["nǐ", "xiǎng", "qù", "nǎ", "li"]
     );
@@ -33,7 +30,6 @@ fn test_strict4() {
 fn test_strict5() {
     assert_eq!(
         PinyinParser::strict("jiǔshíjiǔ")
-            .into_iter()
             .collect::<Vec<_>>(),
         vec!["jiǔ", "shí", "jiǔ"]
     );
@@ -43,7 +39,6 @@ fn test_strict5() {
 fn test_strict6() {
     assert_eq!(
         PinyinParser::strict("Wǒ rènshi Lǜ xiǎojiě.")
-            .into_iter()
             .collect::<Vec<_>>(),
         vec!["wǒ", "rèn", "shi", "lǜ", "xiǎo", "jiě"]
     );
@@ -56,7 +51,7 @@ fn test() {
         .preserve_miscellaneous(true)
         .preserve_spaces(true);
     assert_eq!(
-        parser.parse("你Nǐ 好hǎo").into_iter().collect::<Vec<_>>(),
+        parser.parse("你Nǐ 好hǎo").collect::<Vec<_>>(),
         vec!["你", "nǐ", " ", "好", "hǎo"]
     );
 }
@@ -68,7 +63,7 @@ fn test2() {
         .preserve_miscellaneous(true)
         .preserve_spaces(true);
     assert_eq!(
-        parser.parse("你Nǐあ好hǎo").into_iter().collect::<Vec<_>>(),
+        parser.parse("你Nǐあ好hǎo").collect::<Vec<_>>(),
         vec!["你", "nǐ", "あ", "好", "hǎo"]
     );
 }

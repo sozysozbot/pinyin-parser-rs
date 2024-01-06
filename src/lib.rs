@@ -215,9 +215,7 @@ impl<T> VecAndIndex<T> {
     }
 
     fn rewind(&mut self, n: usize) {
-        if self.next_pos < n {
-            panic!("too much rewind");
-        }
+        assert!(self.next_pos >= n, "too much rewind");
         self.next_pos -= n;
     }
 
@@ -244,7 +242,7 @@ impl Iterator for PinyinParserIter {
                 (
                     b @ Some(LightToneMarker | Punctuation(_) | Apostrophe | Space(_) | Others(_)),
                     a @ (InitialParsed(_) | ZCSParsed(_)),
-                ) => panic!("unexpected {:?} found after parsing initial {:?}", b, a),
+                ) => panic!("unexpected {b:?} found after parsing initial {a:?}"),
                 (
                     Some(LightToneMarker),
                     AfterSyllablePossiblyConsumingApostrophe | BeforeWordInitial,
@@ -258,9 +256,9 @@ impl Iterator for PinyinParserIter {
                     return None
                 }
                 (None, InitialParsed(initial)) => {
-                    panic!("unexpected end of string found after {:?}", initial);
+                    panic!("unexpected end of string found after {initial:?}");
                 }
-                (None, ZCSParsed(zcs)) => panic!("unexpected end of string found after {:?}", zcs),
+                (None, ZCSParsed(zcs)) => panic!("unexpected end of string found after {zcs:?}"),
                 (
                     Some(Punctuation(s)),
                     BeforeWordInitial | AfterSyllablePossiblyConsumingApostrophe,
@@ -389,15 +387,12 @@ impl Iterator for PinyinParserIter {
                     self.it.rewind(1);
                     let candidates = self.it.get_candidates_without_rhotic(self.configs.p_strict);
 
-                    if candidates.is_empty() {
-                        panic!(
-                            "no adequate candidate for finals (-an, -ian, ...) is found, after the initial {:?}",
-                            initial
+                    assert!(!candidates.is_empty(), 
+                            "no adequate candidate for finals (-an, -ian, ...) is found, after the initial {initial:?}"
                         );
-                    }
 
                     for Candidate { ŋ, fin, tone } in candidates.clone() {
-                        let fin_len = fin.len() - if ŋ { 1 } else { 0 }; // ŋ accounts for ng, hence the len is shorter by 1
+                        let fin_len = fin.len() - usize::from(ŋ); // ŋ accounts for ng, hence the len is shorter by 1
                         self.it.advance(fin_len);
 
                         // ITERATOR IS TEMPORARILY ADVANCED HERE
@@ -425,9 +420,7 @@ impl Iterator for PinyinParserIter {
                                         _ => false,
                                     };
 
-                                    if !a_e_o {
-                                        panic!("In strict mode, an apostrophe must be followed by either 'a', 'e' or 'o'");
-                                    }
+                                    assert!(a_e_o, "In strict mode, an apostrophe must be followed by either 'a', 'e' or 'o'");
                                 }
 
                                 self.state = AfterSyllablePossiblyConsumingApostrophe;
@@ -563,8 +556,7 @@ impl Iterator for PinyinParserIter {
                         }
                     }
                     panic!(
-                        "no adequate candidate for finals (-an, -ian, ...) found, among possible candidates {:?}",
-                        candidates
+                        "no adequate candidate for finals (-an, -ian, ...) found, among possible candidates {candidates:?}"
                     );
                 }
             }
@@ -574,6 +566,7 @@ impl Iterator for PinyinParserIter {
 
 mod finals;
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 enum ZCS {
     Z,
@@ -612,30 +605,30 @@ enum SpellingInitial {
 impl std::fmt::Display for SpellingInitial {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            SpellingInitial::B => write!(f, "b"),
-            SpellingInitial::P => write!(f, "p"),
-            SpellingInitial::M => write!(f, "m"),
-            SpellingInitial::F => write!(f, "f"),
-            SpellingInitial::D => write!(f, "d"),
-            SpellingInitial::T => write!(f, "t"),
-            SpellingInitial::N => write!(f, "n"),
-            SpellingInitial::L => write!(f, "l"),
-            SpellingInitial::G => write!(f, "g"),
-            SpellingInitial::K => write!(f, "k"),
-            SpellingInitial::H => write!(f, "h"),
-            SpellingInitial::J => write!(f, "j"),
-            SpellingInitial::Q => write!(f, "q"),
-            SpellingInitial::X => write!(f, "x"),
-            SpellingInitial::ZH => write!(f, "zh"),
-            SpellingInitial::CH => write!(f, "ch"),
-            SpellingInitial::SH => write!(f, "sh"),
-            SpellingInitial::R => write!(f, "r"),
-            SpellingInitial::Z => write!(f, "z"),
-            SpellingInitial::C => write!(f, "c"),
-            SpellingInitial::S => write!(f, "s"),
-            SpellingInitial::Y => write!(f, "y"),
-            SpellingInitial::W => write!(f, "w"),
-            SpellingInitial::ZeroAEO => write!(f, ""),
+            Self::B => write!(f, "b"),
+            Self::P => write!(f, "p"),
+            Self::M => write!(f, "m"),
+            Self::F => write!(f, "f"),
+            Self::D => write!(f, "d"),
+            Self::T => write!(f, "t"),
+            Self::N => write!(f, "n"),
+            Self::L => write!(f, "l"),
+            Self::G => write!(f, "g"),
+            Self::K => write!(f, "k"),
+            Self::H => write!(f, "h"),
+            Self::J => write!(f, "j"),
+            Self::Q => write!(f, "q"),
+            Self::X => write!(f, "x"),
+            Self::ZH => write!(f, "zh"),
+            Self::CH => write!(f, "ch"),
+            Self::SH => write!(f, "sh"),
+            Self::R => write!(f, "r"),
+            Self::Z => write!(f, "z"),
+            Self::C => write!(f, "c"),
+            Self::S => write!(f, "s"),
+            Self::Y => write!(f, "y"),
+            Self::W => write!(f, "w"),
+            Self::ZeroAEO => write!(f, ""),
         }
     }
 }

@@ -217,9 +217,9 @@ impl std::fmt::Display for FinalWithTone {
             Tone::Fifth => "",
         };
 
-        let ans = format!("{}{}{}", a, b, c);
+        let ans = format!("{a}{b}{c}");
         let ans = ans.nfc().collect::<String>();
-        write!(f, "{}", ans)
+        write!(f, "{ans}")
     }
 }
 
