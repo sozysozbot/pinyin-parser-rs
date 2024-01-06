@@ -2,8 +2,7 @@ use crate::PinyinParser;
 #[test]
 fn test_strict1() {
     assert_eq!(
-        PinyinParser::strict("mián'ǎo")
-            .collect::<Vec<_>>(),
+        PinyinParser::strict("mián'ǎo").collect::<Vec<_>>(),
         vec!["mián", "ǎo"]
     );
 }
@@ -11,8 +10,7 @@ fn test_strict1() {
 #[test]
 fn test_strict3() {
     assert_eq!(
-        PinyinParser::strict("Nǐ zuò shénme?")
-            .collect::<Vec<_>>(),
+        PinyinParser::strict("Nǐ zuò shénme?").collect::<Vec<_>>(),
         vec!["nǐ", "zuò", "shén", "me"]
     );
 }
@@ -20,8 +18,7 @@ fn test_strict3() {
 #[test]
 fn test_strict4() {
     assert_eq!(
-        PinyinParser::strict("Nǐ xiǎng qù nǎli?")
-            .collect::<Vec<_>>(),
+        PinyinParser::strict("Nǐ xiǎng qù nǎli?").collect::<Vec<_>>(),
         vec!["nǐ", "xiǎng", "qù", "nǎ", "li"]
     );
 }
@@ -29,8 +26,7 @@ fn test_strict4() {
 #[test]
 fn test_strict5() {
     assert_eq!(
-        PinyinParser::strict("jiǔshíjiǔ")
-            .collect::<Vec<_>>(),
+        PinyinParser::strict("jiǔshíjiǔ").collect::<Vec<_>>(),
         vec!["jiǔ", "shí", "jiǔ"]
     );
 }
@@ -38,8 +34,7 @@ fn test_strict5() {
 #[test]
 fn test_strict6() {
     assert_eq!(
-        PinyinParser::strict("Wǒ rènshi Lǜ xiǎojiě.")
-            .collect::<Vec<_>>(),
+        PinyinParser::strict("Wǒ rènshi Lǜ xiǎojiě.").collect::<Vec<_>>(),
         vec!["wǒ", "rèn", "shi", "lǜ", "xiǎo", "jiě"]
     );
 }
@@ -47,7 +42,7 @@ fn test_strict6() {
 #[test]
 fn test() {
     let parser = PinyinParser::new()
-        .is_strict(true)
+        .with_strictness(crate::Strictness::Strict)
         .preserve_miscellaneous(true)
         .preserve_spaces(true);
     assert_eq!(
@@ -59,7 +54,7 @@ fn test() {
 #[test]
 fn test2() {
     let parser = PinyinParser::new()
-        .is_strict(true)
+        .with_strictness(crate::Strictness::Strict)
         .preserve_miscellaneous(true)
         .preserve_spaces(true);
     assert_eq!(
@@ -71,23 +66,20 @@ fn test2() {
 #[test]
 fn test3() {
     assert_eq!(
-        PinyinParser::strict("yù'ér")
-            .collect::<Vec<_>>(),
+        PinyinParser::strict("yù'ér").collect::<Vec<_>>(),
         vec!["yù", "ér"]
     );
 }
 
-
 #[test]
 fn test4() {
     assert_eq!(
-        PinyinParser::strict("yīdiǎnr")
-            .collect::<Vec<_>>(),
+        PinyinParser::strict("yīdiǎnr").collect::<Vec<_>>(),
         vec!["yī", "diǎnr"]
     );
 }
 
-/* 
+/*
 #[test]
 fn test_loose2() {
     assert_eq!(

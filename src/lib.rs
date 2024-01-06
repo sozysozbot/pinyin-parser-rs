@@ -6,9 +6,22 @@ mod tests;
 use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
+pub enum Strictness {
+    Strict,
+    Loose,
+}
+
+impl Strictness {
+    #[must_use]
+    pub fn is_strict(self) -> bool {
+        self == Self::Strict
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct PinyinParser {
-    p_strict: bool,
+    p_strict: Strictness,
     p_preserve_punctuations: bool,
     p_preserve_spaces: bool,
     p_preserve_miscellaneous: bool,
@@ -24,7 +37,7 @@ impl PinyinParser {
     #[must_use]
     pub const fn new() -> Self {
         Self {
-            p_strict: false,
+            p_strict: Strictness::Loose,
             p_preserve_spaces: false,
             p_preserve_punctuations: false,
             p_preserve_miscellaneous: false,
@@ -32,9 +45,22 @@ impl PinyinParser {
     }
 
     #[must_use]
+    #[deprecated = "Use `with_strictness(Strictness::Strict)` or `with_strictness(Strictness::Loose)`"]
     pub const fn is_strict(self, b: bool) -> Self {
         Self {
-            p_strict: b,
+            p_strict: if b {
+                Strictness::Strict
+            } else {
+                Strictness::Loose
+            },
+            ..self
+        }
+    }
+
+    #[must_use]
+    pub const fn with_strictness(self, strictness: Strictness) -> Self {
+        Self {
+            p_strict: strictness,
             ..self
         }
     }
@@ -150,7 +176,7 @@ impl PinyinParser {
 
     #[must_use]
     pub fn strict(s: &str) -> PinyinParserIter {
-        Self::new().is_strict(true).parse(s)
+        Self::new().with_strictness(Strictness::Strict).parse(s)
     }
 
     /// ```
@@ -387,7 +413,7 @@ impl Iterator for PinyinParserIter {
                     self.it.rewind(1);
                     let candidates = self.it.get_candidates_without_rhotic(self.configs.p_strict);
 
-                    assert!(!candidates.is_empty(), 
+                    assert!(!candidates.is_empty(),
                             "no adequate candidate for finals (-an, -ian, ...) is found, after the initial {initial:?}"
                         );
 
@@ -411,7 +437,7 @@ impl Iterator for PinyinParserIter {
                                 self.it.advance(1);
 
                                 // In the strict mode, `a`, `e` or `o` must follow the apostrophe
-                                if self.configs.p_strict {
+                                if self.configs.p_strict.is_strict() {
                                     let a_e_o = match self.it.peek(0) {
                                         Some(Alph(a)) => matches!(
                                             a.alphabet,

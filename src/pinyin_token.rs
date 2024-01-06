@@ -1,3 +1,5 @@
+use crate::Strictness;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum PinyinToken {
     Alph(AlphabetWithDiacritics),
@@ -51,9 +53,15 @@ pub struct AlphabetWithDiacritics {
 }
 
 impl AlphabetWithDiacritics {
-    pub fn to_str(&self, strict: bool) -> String { self.to_str_preserving_capitalization(false, strict)}
+    pub fn to_str(&self, strictness: Strictness) -> String {
+        self.to_str_preserving_capitalization(false, strictness)
+    }
 
-    pub fn to_str_preserving_capitalization(&self, preserve_capitalization: bool, strict: bool) -> String {
+    pub fn to_str_preserving_capitalization(
+        &self,
+        preserve_capitalization: bool,
+        strictness: Strictness,
+    ) -> String {
         use unicode_normalization::UnicodeNormalization;
         let base = if preserve_capitalization && self.capitalized {
             self.alphabet.to_cap()
@@ -65,7 +73,7 @@ impl AlphabetWithDiacritics {
             .diacritics
             .iter()
             .map(|d| {
-                if strict {
+                if strictness.is_strict() {
                     d.to_str()
                 } else {
                     d.to_str_fixing_breve()
@@ -211,7 +219,7 @@ macro_rules! cap {
 }
 
 #[allow(clippy::too_many_lines)]
-pub fn to_token(s: &str, strict: bool) -> PinyinToken {
+pub fn to_token(s: &str, strictness: Strictness) -> PinyinToken {
     use Alphabet::{A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, W, X, Y, Z, Ŋ};
     use Diacritic::{Acute, Breve, Circumflex, Grave, Hacek, Macron, Umlaut};
     let mut it = s.chars();
@@ -297,25 +305,25 @@ pub fn to_token(s: &str, strict: bool) -> PinyinToken {
         Some('ǹ') => low!(N, Grave), Some('Ǹ') => cap!(N, Grave),
 
         // wrong
-        Some('\u{0261}') /* IPA's /g/ */ => if strict { panic!("'\u{0261}' looks like 'g', but it is not.") } else { low!(G) },
-        Some(a @ ('\u{0251}' /* IPA's /ɑ/ */ | 'α')) => if strict { panic!("'{a}' looks like 'a', but it is not.") } else { low!(A) },
-        Some('ο') => if strict { panic!("'ο' looks like 'o', but it is not.") } else { low!(O) },
+        Some('\u{0261}') /* IPA's /g/ */ => if strictness.is_strict() { panic!("'\u{0261}' looks like 'g', but it is not.") } else { low!(G) },
+        Some(a @ ('\u{0251}' /* IPA's /ɑ/ */ | 'α')) => if strictness.is_strict() { panic!("'{a}' looks like 'a', but it is not.") } else { low!(A) },
+        Some('ο') => if strictness.is_strict() { panic!("'ο' looks like 'o', but it is not.") } else { low!(O) },
         // greek capital letters
-        Some('Α') => if strict { panic!("'Α' looks like 'A', but it is not.") } else {cap!(A)}, 
-        Some('Β') => if strict { panic!("'Β' looks like 'B', but it is not.") } else {cap!(B)}, 
-        Some('Ε') => if strict { panic!("'Ε' looks like 'E', but it is not.") } else {cap!(E)},
-        Some('Ζ') => if strict { panic!("'Ζ' looks like 'Z', but it is not.") } else {cap!(Z)}, 
-        Some('Η') => if strict { panic!("'Η' looks like 'H', but it is not.") } else {cap!(H)}, 
-        Some('Ι') => if strict { panic!("'Ι' looks like 'I', but it is not.") } else {cap!(I)},
-        Some('Κ') => if strict { panic!("'Κ' looks like 'K', but it is not.") } else {cap!(K)}, 
-        Some('Μ') => if strict { panic!("'Μ' looks like 'M', but it is not.") } else {cap!(M)} , 
-        Some('Ν') => if strict { panic!("'Ν' looks like 'N', but it is not.") } else {cap!(N)},
-        Some('Ο') => if strict { panic!("'Ο' looks like 'O', but it is not.") } else {cap!(O)}, 
-        Some('Ρ') => if strict { panic!("'Ρ' looks like 'P', but it is not.") } else {cap!(P)}, 
-        Some('Τ') => if strict { panic!("'Τ' looks like 'T', but it is not.") } else {cap!(T)},
-        Some('Υ') => if strict { panic!("'Υ' looks like 'Y', but it is not.") } else {cap!(Y)}, 
-        Some('Χ') => if strict { panic!("'Χ' looks like 'X', but it is not.") } else {cap!(X)},
-        
+        Some('Α') => if strictness.is_strict() { panic!("'Α' looks like 'A', but it is not.") } else {cap!(A)}, 
+        Some('Β') => if strictness.is_strict() { panic!("'Β' looks like 'B', but it is not.") } else {cap!(B)}, 
+        Some('Ε') => if strictness.is_strict() { panic!("'Ε' looks like 'E', but it is not.") } else {cap!(E)},
+        Some('Ζ') => if strictness.is_strict() { panic!("'Ζ' looks like 'Z', but it is not.") } else {cap!(Z)}, 
+        Some('Η') => if strictness.is_strict() { panic!("'Η' looks like 'H', but it is not.") } else {cap!(H)}, 
+        Some('Ι') => if strictness.is_strict() { panic!("'Ι' looks like 'I', but it is not.") } else {cap!(I)},
+        Some('Κ') => if strictness.is_strict() { panic!("'Κ' looks like 'K', but it is not.") } else {cap!(K)}, 
+        Some('Μ') => if strictness.is_strict() { panic!("'Μ' looks like 'M', but it is not.") } else {cap!(M)} , 
+        Some('Ν') => if strictness.is_strict() { panic!("'Ν' looks like 'N', but it is not.") } else {cap!(N)},
+        Some('Ο') => if strictness.is_strict() { panic!("'Ο' looks like 'O', but it is not.") } else {cap!(O)}, 
+        Some('Ρ') => if strictness.is_strict() { panic!("'Ρ' looks like 'P', but it is not.") } else {cap!(P)}, 
+        Some('Τ') => if strictness.is_strict() { panic!("'Τ' looks like 'T', but it is not.") } else {cap!(T)},
+        Some('Υ') => if strictness.is_strict() { panic!("'Υ' looks like 'Y', but it is not.") } else {cap!(Y)}, 
+        Some('Χ') => if strictness.is_strict() { panic!("'Χ' looks like 'X', but it is not.") } else {cap!(X)},
+
         // others
         Some('·') => PinyinToken::LightToneMarker,
         Some('\'' | '’') => PinyinToken::Apostrophe,
@@ -347,6 +355,6 @@ const fn diacritic(c: char) -> Option<Diacritic> {
         '\u{306}' => Some(Diacritic::Breve),
         '\u{308}' => Some(Diacritic::Umlaut),
         '\u{302}' => Some(Diacritic::Circumflex),
-        _ => None
+        _ => None,
     }
 }

@@ -1,4 +1,4 @@
-use crate::{pinyin_token, VecAndIndex};
+use crate::{pinyin_token, Strictness, VecAndIndex};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum NonRhoticFinal {
@@ -89,7 +89,7 @@ macro_rules! toneless {
 }
 
 macro_rules! tone {
-    ($self_:expr, $strict_flag: expr, $ind:expr, $alphabet_pat:pat) => {
+    ($self_:expr, $strictness: expr, $ind:expr, $alphabet_pat:pat) => {
         match $self_.vec.get($self_.next_pos + $ind) {
             Some(PinyinToken::Alph(alph)) => {
                 if matches!(alph.alphabet, $alphabet_pat) {
@@ -98,7 +98,7 @@ macro_rules! tone {
                         &[Diacritic::Acute] => Some(Tone::Second),
                         &[Diacritic::Hacek] => Some(Tone::Third),
                         &[Diacritic::Breve] => {
-                            if $strict_flag {
+                            if $strictness.is_strict() {
                                 None
                             } else {
                                 Some(Tone::Third)
@@ -116,7 +116,7 @@ macro_rules! tone {
         }
     };
 
-    ($self_:expr, $strict_flag: expr, $ind:expr, $alphabet_pat:pat, $diacritic_pat:pat) => {
+    ($self_:expr, $strictness: expr, $ind:expr, $alphabet_pat:pat, $diacritic_pat:pat) => {
         match $self_.vec.get($self_.next_pos + $ind) {
             Some(PinyinToken::Alph(alph)) => {
                 if matches!(alph.alphabet, $alphabet_pat) {
@@ -125,7 +125,7 @@ macro_rules! tone {
                         &[$diacritic_pat, Diacritic::Acute] => Some(Tone::Second),
                         &[$diacritic_pat, Diacritic::Hacek] => Some(Tone::Third),
                         &[$diacritic_pat, Diacritic::Breve] => {
-                            if $strict_flag {
+                            if $strictness.is_strict() {
                                 None
                             } else {
                                 Some(Tone::Third)
@@ -137,7 +137,7 @@ macro_rules! tone {
                         &[Diacritic::Acute, $diacritic_pat] => Some(Tone::Second),
                         &[Diacritic::Hacek, $diacritic_pat] => Some(Tone::Third),
                         &[Diacritic::Breve, $diacritic_pat] => {
-                            if $strict_flag {
+                            if $strictness.is_strict() {
                                 None
                             } else {
                                 Some(Tone::Third)
@@ -227,11 +227,11 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
     #[must_use]
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::cognitive_complexity)]
-    pub fn get_candidates_without_rhotic(&self, strict: bool) -> Vec<Candidate> {
+    pub fn get_candidates_without_rhotic(&self, strictness: Strictness) -> Vec<Candidate> {
         use pinyin_token::{Alphabet, Diacritic, PinyinToken};
         let mut ans = Vec::new();
 
-        if let Some(tone) = tone!(self, strict, 0, Alphabet::A) {
+        if let Some(tone) = tone!(self, strictness, 0, Alphabet::A) {
             ans.push(Candidate {
                 ŋ: false,
                 fin: NonRhoticFinal::A,
@@ -279,7 +279,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
             }
         }
 
-        if let Some(tone) = tone!(self, strict, 0, Alphabet::E, Diacritic::Circumflex) {
+        if let Some(tone) = tone!(self, strictness, 0, Alphabet::E, Diacritic::Circumflex) {
             ans.push(Candidate {
                 ŋ: false,
                 fin: NonRhoticFinal::Ê,
@@ -287,7 +287,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
             });
         }
 
-        if let Some(tone) = tone!(self, strict, 0, Alphabet::E) {
+        if let Some(tone) = tone!(self, strictness, 0, Alphabet::E) {
             ans.push(Candidate {
                 ŋ: false,
                 fin: NonRhoticFinal::E,
@@ -327,7 +327,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
             }
         }
 
-        if let Some(tone) = tone!(self, strict, 0, Alphabet::O) {
+        if let Some(tone) = tone!(self, strictness, 0, Alphabet::O) {
             ans.push(Candidate {
                 ŋ: false,
                 fin: NonRhoticFinal::O,
@@ -362,7 +362,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
         // For I, U and Ü, we must cover both the tone! and toneless!,
         // since the light tone (which is accepted by tone!) is indistinguishable
         // from the toneless.
-        if let Some(tone) = tone!(self, strict, 0, Alphabet::I) {
+        if let Some(tone) = tone!(self, strictness, 0, Alphabet::I) {
             ans.push(Candidate {
                 ŋ: false,
                 fin: NonRhoticFinal::I,
@@ -396,7 +396,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
 
         if toneless!(self, 0, Alphabet::I) {
             // -ia...
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::A) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::A) {
                 ans.push(Candidate {
                     ŋ: false,
                     fin: NonRhoticFinal::Ia,
@@ -436,7 +436,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                 }
             } // end -ia..
 
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::E) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::E) {
                 ans.push(Candidate {
                     ŋ: false,
                     fin: NonRhoticFinal::Ie,
@@ -444,7 +444,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                 });
             }
 
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::U) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::U) {
                 ans.push(Candidate {
                     ŋ: false,
                     fin: NonRhoticFinal::Iu,
@@ -452,7 +452,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                 });
             }
 
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::O) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::O) {
                 ans.push(Candidate {
                     ŋ: false,
                     fin: NonRhoticFinal::Io,
@@ -476,7 +476,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
             }
         }
 
-        if let Some(tone) = tone!(self, strict, 0, Alphabet::U) {
+        if let Some(tone) = tone!(self, strictness, 0, Alphabet::U) {
             ans.push(Candidate {
                 ŋ: false,
                 fin: NonRhoticFinal::U,
@@ -494,7 +494,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
 
         if toneless!(self, 0, Alphabet::U) {
             // -ua..
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::A) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::A) {
                 ans.push(Candidate {
                     ŋ: false,
                     fin: NonRhoticFinal::Ua,
@@ -534,7 +534,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                 }
             } // end -ua..
 
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::E) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::E) {
                 ans.push(Candidate {
                     ŋ: false,
                     fin: NonRhoticFinal::Ue,
@@ -542,7 +542,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                 });
             }
 
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::I) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::I) {
                 ans.push(Candidate {
                     ŋ: false,
                     fin: NonRhoticFinal::Ui,
@@ -550,7 +550,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                 });
             }
 
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::O) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::O) {
                 ans.push(Candidate {
                     ŋ: false,
                     fin: NonRhoticFinal::Uo,
@@ -559,7 +559,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
             }
         }
 
-        if let Some(tone) = tone!(self, strict, 0, Alphabet::U, Diacritic::Umlaut) {
+        if let Some(tone) = tone!(self, strictness, 0, Alphabet::U, Diacritic::Umlaut) {
             ans.push(Candidate {
                 ŋ: false,
                 fin: NonRhoticFinal::Ü,
@@ -575,7 +575,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
             }
         }
         if toneless!(self, 0, Alphabet::U, Diacritic::Umlaut) {
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::A) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::A) {
                 if toneless!(self, 2, Alphabet::N) {
                     ans.push(Candidate {
                         ŋ: false,
@@ -585,7 +585,7 @@ impl VecAndIndex<pinyin_token::PinyinToken> {
                 }
             }
 
-            if let Some(tone) = tone!(self, strict, 1, Alphabet::E) {
+            if let Some(tone) = tone!(self, strictness, 1, Alphabet::E) {
                 ans.push(Candidate {
                     ŋ: false,
                     fin: NonRhoticFinal::Üe,
