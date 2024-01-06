@@ -21,7 +21,11 @@ assert_eq!(
 );
 ```
 
-Erhua is supported: (However, see [#2](https://github.com/sozysozbot/pinyin-parser-rs/issues/2))
+The resulting strings are NFC-normalized (i.e. the sample above gives a single-character `ī` U+012B)
+
+
+
+Erhua is supported.
 
 ```rust
 use pinyin_parser::PinyinParser;
